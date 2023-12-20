@@ -1,13 +1,7 @@
 package org.firstinspires.ftc.teamcode;
-import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-
-import java.util.List;
 
 @TeleOp
 public class CosmoboticsTeleOp extends LinearOpMode {

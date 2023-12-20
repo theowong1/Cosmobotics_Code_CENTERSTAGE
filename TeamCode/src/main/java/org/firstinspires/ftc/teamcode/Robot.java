@@ -1,9 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.apache.commons.math3.util.FastMath.abs;
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
-
-import android.graphics.Matrix;
 
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.lynx.LynxModule;
@@ -15,15 +12,10 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-import java.io.Serializable;
-import java.util.AbstractList;
 import java.util.List;
-import java.util.RandomAccess;
-import java.util.Vector;
 
 
 public class Robot {
@@ -136,7 +128,7 @@ public class Robot {
 //            return Math.pow(acceleration_distance + cruise_distance + max_velocity * deceleration_time - 0.5 * max_acceleration * deceleration_time, 2);
 //        }
 //    }
-//   oh
+//   oh 
     public Robot(OpMode opmode){
         List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
 
