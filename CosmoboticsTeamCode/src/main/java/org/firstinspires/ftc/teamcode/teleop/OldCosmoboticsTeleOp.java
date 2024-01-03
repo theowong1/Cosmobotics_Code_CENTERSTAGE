@@ -1,10 +1,10 @@
-package org.firstinspires.ftc.teamcode;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+package org.firstinspires.ftc.teamcode.teleop;
+
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp
-public class CosmoboticsTeleOp extends LinearOpMode {
+public class OldCosmoboticsTeleOp extends opMode {
     Robot robot;
     public double autoTurn(double x, double y){
         //initialize robot target angle
@@ -49,12 +49,12 @@ public class CosmoboticsTeleOp extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         robot = new Robot(this);
 
-        ElapsedTime gamepadBackTime = new ElapsedTime();
         ElapsedTime droneTime = new ElapsedTime();
+        ElapsedTime gamepadBackTime = new ElapsedTime();
         ElapsedTime gamepadStartTime = new ElapsedTime();
-        ElapsedTime gamepadYTime = new ElapsedTime();
         ElapsedTime gamepadATime = new ElapsedTime();
         ElapsedTime gamepadBTime = new ElapsedTime();
+        ElapsedTime gamepadYTime = new ElapsedTime();
         ElapsedTime gamepad2leftBumperTime = new ElapsedTime();
         ElapsedTime gamepad2rightBumperTime = new ElapsedTime();
         ElapsedTime gamepad1leftBumperTime = new ElapsedTime();
@@ -66,37 +66,6 @@ public class CosmoboticsTeleOp extends LinearOpMode {
         if (isStopRequested()) return;
         while (opModeIsActive()) {
 
-            //Field Centric Drive:
-            double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
-            double x = gamepad1.left_stick_x;
-            double rx = gamepad1.right_stick_x;
-            //this version is robot centric
-            /*double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
-            double x = gamepad1.left_stick_x * 1.1;
-            double rx = gamepad1.right_stick_x;*/
-            // This button choice was made so that it is hard to hit on accident,
-            // it can be freely changed based on preference.
-            // The equivalent button is start on Xbox-style controllers.
-            if (gamepad1.dpad_up) {
-                robot.resetImu();
-            }
-            //field centric ***/))
-            // Rotate the movement direction counter to the bot's rotation
-            double rotX = x * Math.cos(-robot.botHeading) - y * Math.sin(-robot.botHeading);
-            double rotY = x * Math.sin(-robot.botHeading) + y * Math.cos(-robot.botHeading);
-            rotX = rotX * 1.1;  // Counteract imperfect strafing
-            // Denominator is the largest motor power (absolute value) or 1
-            // This ensures all the powers maintain the same ratio,
-            // but only if at least one is out of the range [-1, 1]
-            double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
-            double frontLeftPower = (rotY + rotX + rx) / denominator;
-            double backLeftPower = (-rotY + rotX - rx) / denominator;
-            double frontRightPower = (rotY - rotX - rx) / denominator;
-            double backRightPower = (rotY + rotX - rx) / denominator;
-            robot.frontLeft.setPower(frontLeftPower);
-            robot.backLeft.setPower(backLeftPower);
-            robot.frontRight.setPower(frontRightPower);
-            robot.backRight.setPower(backRightPower);
 
             //robot centric (there is different logic)
             /*double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
@@ -123,18 +92,9 @@ public class CosmoboticsTeleOp extends LinearOpMode {
 
             //Drone Initialization:
             if (droneButton && droneTime.milliseconds() > 500) {
+                robot.droneRot.setPosition(1);
                 robot.droneServo.setPosition(1);
                 droneTime.reset();
-            }
-
-            //Reset Arm Initialization:
-            if (reset && gamepadATime.milliseconds() > 500) {
-                robot.armTarget = 0;
-                robot.slidesTarget = 0;
-                robot.intakeRotation.setPosition(robot.intakeRotationPosStart);
-                robot.leftIntake.setPosition(0);
-                robot.rightIntake.setPosition(0);
-                gamepadATime.reset();
             }
 
             //Slides Initialization:

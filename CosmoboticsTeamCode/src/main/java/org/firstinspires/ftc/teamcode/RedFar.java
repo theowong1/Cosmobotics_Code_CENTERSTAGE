@@ -6,14 +6,14 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.teleop.Robot;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.openftc.easyopencv.OpenCvCamera;
-import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
 
-@Autonomous
-public class BlueFar extends LinearOpMode{
+@Autonomous(preselectTeleOp="CosmoboticsTeleOp")
+public class RedFar extends LinearOpMode{
     Robot robot;
     public void slides(int slidesDistance) {
         robot.slidesTarget = slidesDistance;
@@ -35,11 +35,6 @@ public class BlueFar extends LinearOpMode{
     @Override
     public void runOpMode(){
         robot = new Robot(this);
-
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        phoneCam = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
-        pipeline = new SkystoneDeterminationExample.SkystoneDeterminationPipeline();
-        phoneCam.setPipeline(pipeline);
         // We set the viewport policy to optimized view so the preview doesn't appear 90 deg
         // out when the RC activity is in portrait. We do our actual image processing assuming
         // landscape orientation, though.
@@ -68,7 +63,7 @@ public class BlueFar extends LinearOpMode{
         }
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        Pose2d startPose = new Pose2d(-33, 58, Math.toRadians(270));
+        Pose2d startPose = new Pose2d(-34, -58, Math.toRadians(90));
 
         //Purple Trajectories:
         TrajectorySequence leftPurpTraj = drive.trajectorySequenceBuilder(startPose)
@@ -81,10 +76,9 @@ public class BlueFar extends LinearOpMode{
                 //Make The Trajectory
                 .build();
 
-        TrajectorySequence myLeftSideTraj1 = drive.trajectorySequenceBuilder(startPose)
-                .lineToSplineHeading(new Pose2d(-34, 58, Math.toRadians(270)))
-                .strafeTo(new Vector2d(17, 58))
-                .splineToSplineHeading(new Pose2d(12, 37, Math.toRadians(5)), Math.toRadians(270))
+        TrajectorySequence myRightSideTraj1 = drive.trajectorySequenceBuilder(startPose)
+                .strafeTo(new Vector2d(35, -58))
+                .splineToSplineHeading(new Pose2d(40, -42, Math.toRadians(0)), Math.toRadians(90))
                 .UNSTABLE_addTemporalMarkerOffset(0, () -> {
                     //Extend Slides
                     slides(600);
@@ -115,10 +109,9 @@ public class BlueFar extends LinearOpMode{
                     robot.rightIntake.setPosition(1);
                 })
                 .build();
-        TrajectorySequence myRightSideTraj1 = drive.trajectorySequenceBuilder(startPose)
-                .lineToSplineHeading(new Pose2d(-34, 58, Math.toRadians(270)))
-                .strafeTo(new Vector2d(17, 56.5))
-                .splineToSplineHeading(new Pose2d(12, 34, Math.toRadians(0)), Math.toRadians(270))
+        TrajectorySequence myLeftSideTraj1 = drive.trajectorySequenceBuilder(startPose)
+                .strafeTo(new Vector2d(35, -58))
+                .splineToSplineHeading(new Pose2d(40, -30, Math.toRadians(0)), Math.toRadians(90))
                 .UNSTABLE_addTemporalMarkerOffset(0, () -> {
                     //Extend Slides
                     slides(600);
@@ -136,7 +129,7 @@ public class BlueFar extends LinearOpMode{
                     robot.intakeRotation.setPosition(.31);
                 })
                 .UNSTABLE_addTemporalMarkerOffset(1.1, () -> {
-                    robot.leftIntake.setPosition(1);
+                    robot.intakeRotation.setPosition(1);
                     armMotor(2000);
                     slides(1000);
                 })
@@ -150,8 +143,8 @@ public class BlueFar extends LinearOpMode{
                 })
                 .build();
         TrajectorySequence myCenterSideTraj1 = drive.trajectorySequenceBuilder(startPose)
-                .strafeTo(new Vector2d(18, 58))
-                .splineToSplineHeading(new Pose2d(12, 32, Math.toRadians(2)), Math.toRadians(270))
+                .strafeTo(new Vector2d(35, -58))
+                .splineToSplineHeading(new Pose2d(40, -35, Math.toRadians(0)), Math.toRadians(90))
                 .UNSTABLE_addTemporalMarkerOffset(0, () -> {
                     //Extend Slides
                     slides(600);
@@ -183,42 +176,42 @@ public class BlueFar extends LinearOpMode{
                 })
                 .build();
 
-        TrajectorySequence centerToCyclePath = drive.trajectorySequenceBuilder(new Pose2d(40, 35, Math.toRadians(5)))
-                .strafeTo(new Vector2d(40, 24))
-                .splineToSplineHeading(new Pose2d(-35, 12, Math.toRadians(0)), Math.toRadians(180))
+        TrajectorySequence centerToCyclePath = drive.trajectorySequenceBuilder(new Pose2d(38, -31, Math.toRadians(-10)))
+                .strafeTo(new Vector2d(40, -29))
+                .splineToSplineHeading(new Pose2d(-35, -12, Math.toRadians(0)), Math.toRadians(180))
                 .build();
-        TrajectorySequence leftToCyclePath = drive.trajectorySequenceBuilder(new Pose2d(40, 37, Math.toRadians(5)))
-                .strafeTo(new Vector2d(40, 24))
-                .splineToSplineHeading(new Pose2d(-35, 12, Math.toRadians(0)), Math.toRadians(180))
+        TrajectorySequence rightToCyclePath = drive.trajectorySequenceBuilder(new Pose2d(40, -37, Math.toRadians(-5)))
+                .strafeTo(new Vector2d(40, -29))
+                .splineToSplineHeading(new Pose2d(-35, -12, Math.toRadians(0)), Math.toRadians(180))
                 .build();
-        TrajectorySequence rightToCyclePath = drive.trajectorySequenceBuilder(new Pose2d(40, 30, Math.toRadians(0)))
-                .strafeTo(new Vector2d(40, 24))
-                .splineToSplineHeading(new Pose2d(-35, 12, Math.toRadians(0)), Math.toRadians(180))
+        TrajectorySequence leftToCyclePath = drive.trajectorySequenceBuilder(new Pose2d(40, -30, Math.toRadians(0)))
+                .strafeTo(new Vector2d(40, -29))
+                .splineToSplineHeading(new Pose2d(-35, -12, Math.toRadians(0)), Math.toRadians(180))
                 .build();
 
-        TrajectorySequence parkCentertoLeft = drive.trajectorySequenceBuilder(new Pose2d(40, 35, Math.toRadians(5)))
-                .lineToSplineHeading(new Pose2d(50, 57, Math.toRadians(0)))
-                .splineToConstantHeading(new Vector2d(60, 60), Math.toRadians(0))
+        TrajectorySequence parkCentertoRight = drive.trajectorySequenceBuilder(new Pose2d(38, -31, Math.toRadians(-10)))
+                .strafeTo(new Vector2d(50, -57))
+                .splineToConstantHeading(new Vector2d(60, -60), Math.toRadians(0))
                 .build();
-        TrajectorySequence parkLefttoLeft = drive.trajectorySequenceBuilder(new Pose2d(40, 37, Math.toRadians(5)))
-                .lineToSplineHeading(new Pose2d(50, 57, Math.toRadians(0)))
-                .splineToConstantHeading(new Vector2d(60, 60), Math.toRadians(0))
+        TrajectorySequence parkRighttoRight = drive.trajectorySequenceBuilder(new Pose2d(40, -37, Math.toRadians(-5)))
+                .strafeTo(new Vector2d(50, -57))
+                .splineToConstantHeading(new Vector2d(60, -60), Math.toRadians(0))
                 .build();
-        TrajectorySequence parkRighttoLeft = drive.trajectorySequenceBuilder(new Pose2d(40, 30, Math.toRadians(0)))
-                .lineToSplineHeading(new Pose2d(50, 57, Math.toRadians(0)))
-                .splineToConstantHeading(new Vector2d(60, 60), Math.toRadians(0))
+        TrajectorySequence parkLefttoRight = drive.trajectorySequenceBuilder(new Pose2d(40, -30, Math.toRadians(0)))
+                .strafeTo(new Vector2d(50, -57))
+                .splineToConstantHeading(new Vector2d(60, -60), Math.toRadians(0))
                 .build();
-        TrajectorySequence parkCentertoRight = drive.trajectorySequenceBuilder(new Pose2d(40, 35, Math.toRadians(5)))
-                .lineToSplineHeading(new Pose2d(48, 14, Math.toRadians(0)))
-                .splineToConstantHeading(new Vector2d(60, 11), Math.toRadians(0))
+        TrajectorySequence parkCentertoLeft = drive.trajectorySequenceBuilder(new Pose2d(38, -31, Math.toRadians(-10)))
+                .strafeTo(new Vector2d(48, -14))
+                .splineToConstantHeading(new Vector2d(60, -11), Math.toRadians(0))
                 .build();
-        TrajectorySequence parkLefttoRight = drive.trajectorySequenceBuilder(new Pose2d(40, 37, Math.toRadians(5)))
-                .lineToSplineHeading(new Pose2d(48, 14, Math.toRadians(0)))
-                .splineToConstantHeading(new Vector2d(60, 11), Math.toRadians(0))
+        TrajectorySequence parkRighttoLeft = drive.trajectorySequenceBuilder(new Pose2d(40, -37, Math.toRadians(-5)))
+                .strafeTo(new Vector2d(48, -14))
+                .splineToConstantHeading(new Vector2d(60, -11), Math.toRadians(0))
                 .build();
-        TrajectorySequence parkRighttoRight = drive.trajectorySequenceBuilder(new Pose2d(40, 30, Math.toRadians(0)))
-                .lineToSplineHeading(new Pose2d(48, 14, Math.toRadians(0)))
-                .splineToConstantHeading(new Vector2d(60, 11), Math.toRadians(0))
+        TrajectorySequence parkLefttoLeft = drive.trajectorySequenceBuilder(new Pose2d(40, -30, Math.toRadians(0)))
+                .strafeTo(new Vector2d(48, -14))
+                .splineToConstantHeading(new Vector2d(60, -11), Math.toRadians(0))
                 .build();
 
         waitForStart();

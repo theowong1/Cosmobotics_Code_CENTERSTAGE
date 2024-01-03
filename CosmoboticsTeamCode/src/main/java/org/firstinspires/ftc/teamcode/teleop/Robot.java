@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.teleop;
 
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
 
@@ -19,30 +19,19 @@ import java.util.List;
 
 
 public class Robot {
-    public DcMotorEx frontRight;
-    public DcMotorEx frontLeft;
-    public DcMotorEx backRight;
-    public DcMotorEx backLeft;
-    public DcMotorEx slidesMotor;
 
-    public DcMotorEx armMotor;
 
-    public ServoImplEx rightIntake;
-
-    public ServoImplEx leftIntake;
-    public ServoImplEx intakeRotation;
-    public ServoImplEx droneServo;
-    public PIDController arm_controller;
+    public static PIDController arm_controller;
     public static double arm_p = 0, arm_i = 0, arm_d = 0;
     public static double arm_f = 0;
     public static int armTarget = 0;
-    public final double arm_ticks_in_degrees = 1425.1;
-    public PIDController slides_controller;
+    public static final double arm_ticks_in_degrees = 1425.1;
+    public static PIDController slides_controller;
 
     public static double slides_p = 0, slides_i = 0, slides_d = 0;
     public static double slides_f = 0;
     public static int slidesTarget = 0;
-    public final double slides_ticks_in_degrees = 537.7;
+    public static final double slides_ticks_in_degrees = 537.7;
 
     //    public final double arm_max_acceleration = 0;
 //    public final double arm_max_velocity = 0;
@@ -56,21 +45,12 @@ public class Robot {
 
 
 
-
-    IMU imu;
-
     //Bulk Read:
-    public double intakeRotationPosStart = 0.31;
-    public double intakeRotationPosEnd = .92;
     public double leftIntakePos = leftIntake.getPosition();
     public double rightIntakePos = rightIntake.getPosition();
     public double intakeRotationPos = intakeRotation.getPosition();
     public int armPos = armMotor.getCurrentPosition();
     public int slidesPos = slidesMotor.getCurrentPosition();
-    public int frontLeftPos = frontLeft.getCurrentPosition();
-    public int frontRightPos = frontRight.getCurrentPosition();
-    public int backLeftPos = backLeft.getCurrentPosition();
-    public int backRightPos = backRight.getCurrentPosition();
 
     public double botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
@@ -136,23 +116,6 @@ public class Robot {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
 
-        frontRight = opmode.hardwareMap.get(DcMotorEx.class, "frontRight");
-        frontLeft = opmode.hardwareMap.get(DcMotorEx.class, "frontLeft");
-        backRight = opmode.hardwareMap.get(DcMotorEx.class, "backRight");
-        backLeft = opmode.hardwareMap.get(DcMotorEx.class, "backLeft");
-        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
-        frontLeft.setDirection(DcMotorSimple.Direction.FORWARD);
-        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
-        backLeft.setDirection(DcMotorSimple.Direction.FORWARD);
-
         armMotor = opmode.hardwareMap.get(DcMotorEx.class, "armMotor");
         slidesMotor = opmode.hardwareMap.get(DcMotorEx.class, "slidesMotor");
         armMotor.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -180,10 +143,6 @@ public class Robot {
         rightIntake.setDirection(ServoImplEx.Direction.FORWARD);
         leftIntake.setDirection(ServoImplEx.Direction.REVERSE);
         droneServo.setDirection(ServoImplEx.Direction.REVERSE);
-        leftIntake.setPosition(0);
-        rightIntake.setPosition(0);
-        intakeRotation.setPosition(intakeRotationPosStart);
-        droneServo.setPosition(0);
 
         imu = opmode.hardwareMap.get(IMU.class, "imu");
         // Adjust the orientation parameters to match your robot
@@ -201,22 +160,7 @@ public class Robot {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
 
-        frontRight = linearOpMode.hardwareMap.get(DcMotorEx.class, "frontRight");
-        frontLeft = linearOpMode.hardwareMap.get(DcMotorEx.class, "frontLeft");
-        backRight = linearOpMode.hardwareMap.get(DcMotorEx.class, "backRight");
-        backLeft = linearOpMode.hardwareMap.get(DcMotorEx.class, "backLeft");
-        frontRight.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        frontLeft.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        backRight.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        backLeft.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
-        frontLeft.setDirection(DcMotorSimple.Direction.FORWARD);
-        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
-        backLeft.setDirection(DcMotorSimple.Direction.FORWARD);
+
 
         armMotor = linearOpMode.hardwareMap.get(DcMotorEx.class, "armMotor");
         slidesMotor = linearOpMode.hardwareMap.get(DcMotorEx.class, "slidesMotor");
@@ -239,8 +183,6 @@ public class Robot {
         double slidesPower = slides_pid + slides_ff;
         armMotor.setPower(slidesPower);
 
-
-
         intakeRotation = linearOpMode.hardwareMap.get(ServoImplEx.class, "intakeRotation");
         rightIntake = linearOpMode.hardwareMap.get(ServoImplEx.class, "rightIntake");
         leftIntake = linearOpMode.hardwareMap.get(ServoImplEx.class, "leftIntake");
@@ -249,10 +191,6 @@ public class Robot {
         rightIntake.setDirection(ServoImplEx.Direction.FORWARD);
         leftIntake.setDirection(ServoImplEx.Direction.REVERSE);
         droneServo.setDirection(ServoImplEx.Direction.REVERSE);
-        leftIntake.setPosition(0);
-        rightIntake.setPosition(0);
-        intakeRotation.setPosition(.31);
-        droneServo.setPosition(0);
 
         imu = linearOpMode.hardwareMap.get(IMU.class, "imu");
         // Adjust the orientation parameters to match your robot
@@ -264,9 +202,6 @@ public class Robot {
         imu.resetYaw();
     }
 
-    public IMU getImu(){
-        return imu;
-    }
     public void resetImu(){
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.BACKWARD,

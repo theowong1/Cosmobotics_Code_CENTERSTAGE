@@ -4,44 +4,39 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.teleop.Robot;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
 
-@Autonomous
+@Autonomous(preselectTeleOp="CosmoboticsTeleOp")
 public class BlueClose extends LinearOpMode {
     Robot robot;
     public void slides(int slidesDistance) {
         robot.slidesTarget = slidesDistance;
-        telemetry.addData("SlidesPos: ", slidesMotor.getCurrentPosition());
+        telemetry.addData("SlidesPos: ", robot.slidesMotor.getCurrentPosition());
         telemetry.addData("SlidesTarget: ", robot.slidesTarget);
         telemetry.update();
     }
 
     public void armMotor(int armDistance) {
         robot.armTarget = armDistance;
-        telemetry.addData("ArmMotorPos: ", armMotor.getCurrentPosition());
+        telemetry.addData("ArmMotorPos: ", robot.armMotor.getCurrentPosition());
         telemetry.addData("ArmMotorTarget: ", robot.armTarget);
         telemetry.update();
     }
 
-    DcMotor slidesMotor;
-    DcMotor armMotor;
-    ServoImplEx leftIntake;
-    ServoImplEx rightIntake;
-    ServoImplEx rotationalIntake;
     OpenCvInternalCamera phoneCam;
     SkystoneDeterminationExample.SkystoneDeterminationPipeline pipeline;
 
     @Override
     public void runOpMode() {
+        robot = new Robot(this);
         //Camera:
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("camera", "id", hardwareMap.appContext.getPackageName());
         phoneCam = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
@@ -149,14 +144,14 @@ public class BlueClose extends LinearOpMode {
 
                 }
                 //Place Yellow Pixel
-                leftIntake.setPosition(1);
+                robot.leftIntake.setPosition(1);
                 start_t = System.currentTimeMillis();
                 while (System.currentTimeMillis()-start_t < 500 && opModeIsActive()) {
 
                 }
                 slides(0);
-                leftIntake.setPosition(0);
-                rotationalIntake.setPosition(.92);
+                robot.leftIntake.setPosition(0);
+                robot.intakeRotation.setPosition(.92);
                 start_t = System.currentTimeMillis();
                 while (System.currentTimeMillis()-start_t < 1000 && opModeIsActive()) {
 
@@ -167,7 +162,7 @@ public class BlueClose extends LinearOpMode {
 
                 }
                 slides(600);
-                rightIntake.setPosition(1);
+                robot.rightIntake.setPosition(1);
                 //Place Purple Pixel
                 start_t = System.currentTimeMillis();
                 while (System.currentTimeMillis()-start_t < 1000 && opModeIsActive()) {
@@ -179,12 +174,12 @@ public class BlueClose extends LinearOpMode {
                 while (System.currentTimeMillis()-start_t < 1000 && opModeIsActive()) {
 
                 }
-                rightIntake.setPosition(0);
-                rotationalIntake.setPosition(.31);
+                robot.rightIntake.setPosition(0);
+                robot.intakeRotation.setPosition(.31);
                 //Park
                 drive.followTrajectorySequence(parkLefttoLeft);
             } else if (colorPos == SkystoneDeterminationExample.SkystoneDeterminationPipeline.SkystonePosition.CENTER) {
-                rotationalIntake.setPosition(.92);
+                robot.intakeRotation.setPosition(.92);
                 long start_t = System.currentTimeMillis();
                 while (System.currentTimeMillis()-start_t < 200 && opModeIsActive()) {
 
@@ -200,19 +195,19 @@ public class BlueClose extends LinearOpMode {
 
                 }
                 //Place Purp Pixel
-                leftIntake.setPosition(1);
+                robot.leftIntake.setPosition(1);
                 slides(0);
                 start_t = System.currentTimeMillis();
                 while (System.currentTimeMillis()-start_t < 1000 && opModeIsActive()) {
 
                 }
-                leftIntake.setPosition(0);
+                robot.leftIntake.setPosition(0);
                 armMotor(0);
                 start_t = System.currentTimeMillis();
                 while (System.currentTimeMillis()-start_t < 1000 && opModeIsActive()) {
 
                 }
-                rotationalIntake.setPosition(.31);
+                robot.intakeRotation.setPosition(.31);
                 drive.followTrajectorySequence(myCenterSideTraj1);
                 //Extend Slides
                 slides(2000);
@@ -221,13 +216,13 @@ public class BlueClose extends LinearOpMode {
 
                 }
                 //Place Yellow Pixel
-                rightIntake.setPosition(1);
+                robot.rightIntake.setPosition(1);
                 start_t = System.currentTimeMillis();
                 while (System.currentTimeMillis()-start_t < 1000 && opModeIsActive()) {
 
                 }
                 slides(0);
-                rightIntake.setPosition(0);
+                robot.rightIntake.setPosition(0);
                 //Park
                 drive.followTrajectorySequence(parkCentertoLeft);
             } else if (colorPos == SkystoneDeterminationExample.SkystoneDeterminationPipeline.SkystonePosition.RIGHT) {
@@ -239,20 +234,20 @@ public class BlueClose extends LinearOpMode {
 
                 }
                 //Place Yellow Pixel
-                rightIntake.setPosition(1);
+                robot.rightIntake.setPosition(1);
                 start_t = System.currentTimeMillis();
                 while (System.currentTimeMillis()-start_t < 500) {
 
                 }
                 slides(0);
-                rightIntake.setPosition(0);
-                rotationalIntake.setPosition(.92);
+                robot.rightIntake.setPosition(0);
+                robot.intakeRotation.setPosition(.92);
                 start_t = System.currentTimeMillis();
                 while (System.currentTimeMillis()-start_t < 1000) {
 
                 }
                 armMotor(1500);
-                armMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+                robot.armMotor.setDirection(DcMotorSimple.Direction.REVERSE);
                 start_t = System.currentTimeMillis();
                 while (System.currentTimeMillis()-start_t < 1500) {
 
@@ -263,20 +258,20 @@ public class BlueClose extends LinearOpMode {
 
                 }
                 //Place Purple Pixel
-                leftIntake.setPosition(1);
+                robot.leftIntake.setPosition(1);
                 slides(0);
                 start_t = System.currentTimeMillis();
                 while (System.currentTimeMillis()-start_t < 1500) {
 
                 }
                 armMotor(0);
-                armMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+                robot.armMotor.setDirection(DcMotorSimple.Direction.FORWARD);
                 start_t = System.currentTimeMillis();
                 while (System.currentTimeMillis()-start_t < 3000) {
 
                 }
-                leftIntake.setPosition(0);
-                rotationalIntake.setPosition(.31);
+                robot.leftIntake.setPosition(0);
+                robot.intakeRotation.setPosition(.31);
                 //Park
                 drive.followTrajectorySequence(parkRighttoLeft);
             }
