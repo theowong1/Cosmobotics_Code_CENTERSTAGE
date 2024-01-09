@@ -89,7 +89,6 @@ public class Drive {
         backLeft.setPower(backLeftPower);
         frontRight.setPower(frontRightPower);
         backRight.setPower(backRightPower);
-
         // This button choice was made so that it is hard to hit on accident,
         // it can be freely changed based on preference.
         //Reset IMU:

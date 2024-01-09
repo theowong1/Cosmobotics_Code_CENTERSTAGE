@@ -1,5 +1,5 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
 public class AllianceStorage {
-    public static boolean isBlue;
+    public static boolean isBlue = false;
 }

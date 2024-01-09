@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 
 public class Transport {
     public static DcMotorEx slidesMotor;
@@ -17,6 +18,7 @@ public class Transport {
 
     public static ServoImplEx leftIntake;
     public static ServoImplEx intakeRotation;
+    public static TouchSensor touchSensor;
 
 
     //Safe, Intaking, Parallels (.5, 1st, 1.5, 2nd, 2.5, 3rd, 3.5), Hang
@@ -26,8 +28,12 @@ public class Transport {
     //Safe, Intaking (Parallel), Parallels (.5, 1st, 1.5, 2nd, 2.5, 3rd, 3.5)
     public static final double[] intakeRotPositions = {0, .15, .6, .65, .7, .75, .8, .85, .9};
 
-    public static final PIDFCoefficients slidesPIDF = new PIDFCoefficients(0, 0, 0,0);
-    public static final PIDFCoefficients armPIDF = new PIDFCoefficients(0, 0, 0, 0);
+    public static final PIDFCoefficients getSlidesPIDF() {
+        return new PIDFCoefficients(0, 0, 0,0);
+    }
+    public static final PIDFCoefficients getArmPIDF() {
+        return new PIDFCoefficients(0, 0, 0, 0);
+    }
     //Idx
     public static int leftClawPos = 0;
     public static int rightClawPos = 0;
@@ -37,6 +43,9 @@ public class Transport {
 
     //Neutral, In-taking, Out-taking
     public static int mode = 0;
+
+    public static boolean automode;
+    public static boolean isButton = false;
     public enum TPos {
         //Reset:
         RESET("RESET", slidesPositions[0], armPositions[0], intakeRotPositions[0]),
@@ -81,6 +90,8 @@ public class Transport {
     public TPos transportPos = TPos.RESET;
 
     public Transport (HardwareMap hardwareMap) {
+        touchSensor = hardwareMap.get(TouchSensor.class, "touchSensor");
+
         armMotor = hardwareMap.get(DcMotorEx.class, "armMotor");
         slidesMotor = hardwareMap.get(DcMotorEx.class, "slidesMotor");
 
@@ -93,8 +104,9 @@ public class Transport {
         armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         slidesMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        slidesMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, slidesPIDF());
-
+        slidesMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, getArmPIDF());
+        slidesMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, getSlidesPIDF());
 
         intakeRotation = hardwareMap.get(ServoImplEx.class, "intakeRotation");
         rightIntake = hardwareMap.get(ServoImplEx.class, "rightIntake");
@@ -112,6 +124,7 @@ public class Transport {
         leftIntake.setPosition(clawPositions[leftClawPos]);
         rightIntake.setPosition(clawPositions[rightClawPos]);
     }
+
     public void update(Gamepad gamepad1, Gamepad gamepad2) {
         if (gamepad1.left_trigger != 0) {
             leftClawPos = 2;
@@ -122,6 +135,13 @@ public class Transport {
             rightClawPos = 2;
         } else {
             rightClawPos = 0;
+        }
+        if (gamepad2.back) { //TO DO: USE TOGGLE LOGIC
+            if (automode) {
+                automode = false;
+            } else {
+                automode = true;
+            }
         }
         if (gamepad2.dpad_right) {
             transportPos = TPos.RESET;
@@ -170,6 +190,25 @@ public class Transport {
         if (gamepad2.right_stick_button) {
             transportPos = TPos.HANG;
             mode = 2;
+        }
+        if (automode) {
+            if (mode == 0) {
+                leftClawPos = 0;
+                rightClawPos = 0;
+            }
+            else if (mode == 1) {
+                leftClawPos = 2;
+                rightClawPos = 2;
+            }
+            else {
+                if (touchSensor.isPressed()) {
+                    leftClawPos = 2;
+                    rightClawPos = 2;
+                } else {
+                    leftClawPos = 0;
+                    rightClawPos = 0;
+                }
+            }
         }
         setTPos();
     }
