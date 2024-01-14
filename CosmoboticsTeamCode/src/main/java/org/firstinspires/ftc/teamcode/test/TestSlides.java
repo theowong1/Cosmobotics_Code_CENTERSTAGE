@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.test;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -22,10 +23,12 @@ import java.util.List;
 public class TestSlides extends OpMode {
     private DcMotorEx slidesMotor;
 
-    public static double kP = 0.0;
-    public static double kI = 0.0;
-    public static double kD = 0.0;
-    public static double kF = 0.0;
+    public static PIDController slides_controller;
+    public static double slides_p = 0, slides_i = 0, slides_d = 0;
+    public static double slides_f = 0;
+    public static int slidesTarget = 0;
+    public static final double slides_ticks_in_degrees = 537.7;
+    public static double slidesPos;
 
 
     // TODO: Maybe set beginning to zero
@@ -41,21 +44,18 @@ public class TestSlides extends OpMode {
         slidesMotor.setTargetPosition(state);
         slidesMotor.setPower(1);
         slidesMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        slidesMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, new PIDFCoefficients(kP, kI, kD, kF));
+
+        slidesPos = slidesMotor.getCurrentPosition();
     }
 
     @Override
     public void loop() {
-        telemetry.addLine("Directions: Press each button to move slide to its respective position");
-        if (gamepad1.dpad_down) state = 0; // Safe
-        if (gamepad1.dpad_left) state = 1; // Close
-        if (gamepad1.dpad_up) state = 2; // Med
-        if (gamepad1.dpad_right) state = 3; // Far
-
-        slidesMotor.setTargetPosition(state);
-        telemetry.addData("target-pos: ", state);
-
-        telemetry.addData("pos: ", slidesMotor.getCurrentPosition());
+        slides_controller = new PIDController(slides_p, slides_i, slides_d);
+        slides_controller.setPID(slides_p, slides_i, slides_d);
+        double slides_pid = slides_controller.calculate(slidesPos, slidesTarget);
+        double slides_ff = Math.cos(Math.toRadians(slidesTarget / slides_ticks_in_degrees)) * slides_f;
+        double slidesPower = slides_pid + slides_ff;
+        slidesMotor.setPower(slidesPower);
     }
 }
 

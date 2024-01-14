@@ -133,7 +133,7 @@
 //        double slides_pid = slides_controller.calculate(slidesPos, slidesTarget);
 //        double slides_ff = Math.cos(Math.toRadians(slidesTarget / slides_ticks_in_degrees)) * slides_f;
 //        double slidesPower = slides_pid + slides_ff;
-//        armMotor.setPower(slidesPower);
+//        slidesMotor.setPower(slidesPower);
 //
 //        intakeRotation = opmode.hardwareMap.get(ServoImplEx.class, "intakeRotation");
 //        rightIntake = opmode.hardwareMap.get(ServoImplEx.class, "rightIntake");

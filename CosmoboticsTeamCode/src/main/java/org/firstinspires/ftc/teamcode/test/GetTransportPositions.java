@@ -36,14 +36,14 @@ public class GetTransportPositions extends OpMode {
         armMotor = hardwareMap.get(DcMotorEx.class, "ArmMotor");
         armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        armMotor.setTargetPosition(0);
-        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        armMotor.setTargetPosition(0);
+//        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         slidesMotor = hardwareMap.get(DcMotorEx.class, "slidesMotor");
         slidesMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         slidesMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        slidesMotor.setTargetPosition(0);
-        slidesMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        slidesMotor.setTargetPosition(0);
+//        slidesMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         intakeRotation = hardwareMap.get(ServoImplEx.class, "intakeRotation");
         rightIntake = hardwareMap.get(ServoImplEx.class, "rightIntake");

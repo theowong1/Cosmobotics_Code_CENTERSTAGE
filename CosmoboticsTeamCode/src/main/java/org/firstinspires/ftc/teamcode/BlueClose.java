@@ -16,57 +16,16 @@
 //
 //@Autonomous(preselectTeleOp="CosmoboticsTeleOp")
 //public class BlueClose extends LinearOpMode {
-//    Robot robot;
-//    public void slides(int slidesDistance) {
-//        robot.slidesTarget = slidesDistance;
-//        telemetry.addData("SlidesPos: ", robot.slidesMotor.getCurrentPosition());
-//        telemetry.addData("SlidesTarget: ", robot.slidesTarget);
-//        telemetry.update();
-//    }
-//
-//    public void armMotor(int armDistance) {
-//        robot.armTarget = armDistance;
-//        telemetry.addData("ArmMotorPos: ", robot.armMotor.getCurrentPosition());
-//        telemetry.addData("ArmMotorTarget: ", robot.armTarget);
-//        telemetry.update();
-//    }
-//
-//    OpenCvInternalCamera phoneCam;
-//    SkystoneDeterminationExample.SkystoneDeterminationPipeline pipeline;
-//
+//    SampleMecanumDrive drive;
+//    Pose2d startPose;
 //    @Override
 //    public void runOpMode() {
-//        robot = new Robot(this);
-//        //Camera:
-//        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("camera", "id", hardwareMap.appContext.getPackageName());
-//        phoneCam = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
-//        pipeline = new SkystoneDeterminationExample.SkystoneDeterminationPipeline();
-//        phoneCam.setPipeline(pipeline);
-//        // We set the viewport policy to optimized view so the preview doesn't appear 90 deg
-//        // out when the RC activity is in portrait. We do our actual image processing assuming
-//        // landscape orientation, though.
-//        phoneCam.setViewportRenderingPolicy(OpenCvCamera.ViewportRenderingPolicy.OPTIMIZE_VIEW);
-//
-//        phoneCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
-//            @Override
-//            public void onOpened() {
-//                phoneCam.startStreaming(640, 480, OpenCvCameraRotation.SIDEWAYS_LEFT);
-//            }
-//
-//            @Override
-//            public void onError(int errorCode) {
-//                /*
-//                 * This will be called if the camera could not be opened
-//                 */
-//            }
-//        });
-//
 //        //Constants:
-//        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-//        Pose2d startPose = new Pose2d(10, 60, Math.toRadians(270));
+//        drive = new SampleMecanumDrive(hardwareMap);
+//        startPose = new Pose2d(10, 60, Math.toRadians(270));
 //        drive.setPoseEstimate(startPose);
 //
-//        //Purple Trajectories:
+//        Spike-Mark Trajectories:
 //        TrajectorySequence leftPurpTraj = drive.trajectorySequenceBuilder(startPose)
 //                .lineToLinearHeading(new Pose2d(23, 38, Math.toRadians(0)))
 //                .build();
