@@ -8,8 +8,10 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.TouchSensor;
+import org.firstinspires.ftc.teamcode.teleop.utils.Toggle;
 
 public class Transport {
+    public Toggle toggle;
     public static DcMotorEx slidesMotor;
 
     public static DcMotorEx armMotor;
@@ -18,54 +20,53 @@ public class Transport {
 
     public static ServoImplEx leftIntake;
     public static ServoImplEx intakeRotation;
-    public static TouchSensor touchSensor;
+    public static TouchSensor touchSensorClaw;
+    public static TouchSensor zeroLimit;
+    public static TouchSensor maxLimit;
 
+    public static int mode = 0;
+    public static boolean automode;
 
-    //Safe, Intaking, Parallels (.5, 1st, 1.5, 2nd, 2.5, 3rd, 3.5), Hang
-    public static final int[] armPositions = {0, 3000, 300, 450, 600, 750, 900, 1050, 1200, 1500};
-    //Safe, Close, Med, Far
-    public static final int[] slidesPositions = {0, 1000, 2000, 3000};
-    //Safe, Intaking (Parallel), Parallels (.5, 1st, 1.5, 2nd, 2.5, 3rd, 3.5)
-    public static final double[] intakeRotPositions = {0, .15, .6, .65, .7, .75, .8, .85, .9};
+    //Safe, Intaking Ground, Intaking Med, Intaking Top, Parallels (.5, 1st, 1.5, 2nd, 2.5, 3rd, 3.5), Hang
+    public static final int[] armPositions = {-30, 3630, 3590, 3550, 196, 351, 447, 552, 686, 784, 871, 1780};
+    //Safe, Full
+    public static final int[] slidesPositions = {0, 2935};
 
-    public static final PIDFCoefficients getSlidesPIDF() {
-        return new PIDFCoefficients(0, 0, 0,0);
-    }
-    public static final PIDFCoefficients getArmPIDF() {
-        return new PIDFCoefficients(0, 0, 0, 0);
-    }
+    //Safe, Deploy, Intaking, Parallels (.5, 1st, 1.5, 2nd, 2.5 - 3.5), Hang
+    public static final double[] intakeRotPositions = {0, .9, .38, .85, .875, .9, .925, 1, .35};
+
     //Idx
     public static int leftClawPos = 0;
     public static int rightClawPos = 0;
 
     //Closed, Inter, Open
-    public static final double[] clawPositions = {0, .1, 1};
+    public static final double[] clawPositions = {1, .95, .375};
 
     //Neutral, In-taking, Out-taking
-    public static int mode = 0;
-
-    public static boolean automode;
-    public static boolean isButton = false;
     public enum TPos {
         //Reset:
         RESET("RESET", slidesPositions[0], armPositions[0], intakeRotPositions[0]),
+
+        //Deploy:
+        DEPLOY("DEPLOY", slidesPositions[0], armPositions[1], intakeRotPositions[1]),
+
         //Intaking Positions:
-        INTAKING_CLOSE("INTAKING_CLOSE",  slidesPositions[1], armPositions[1], intakeRotPositions[1]),
-        INTAKING_MED("INTAKING_MED",  slidesPositions[2], armPositions[1], intakeRotPositions[1]),
-        INTAKING_FAR("INTAKING_FAR",  slidesPositions[3], armPositions[1], intakeRotPositions[1]),
+        INTAKING_GROUND("INTAKING_GROUND",  slidesPositions[1], armPositions[1], intakeRotPositions[2]),
+        INTAKING_MED("INTAKING_MED",  slidesPositions[1], armPositions[2], intakeRotPositions[2]),
+        INTAKING_TOP("INTAKING_STACK",  slidesPositions[1], armPositions[3], intakeRotPositions[2]),
         //Outtaking Positions:
-        OUTTAKING_1("OUTTAKING_1",  slidesPositions[3], armPositions[2], intakeRotPositions[2]),
+        OUTTAKING_1("OUTTAKING_1",  slidesPositions[1], armPositions[4], intakeRotPositions[3]),
 
-        OUTTAKING_2("OUTTAKING_2",  slidesPositions[3], armPositions[3], intakeRotPositions[3]),
+        OUTTAKING_2("OUTTAKING_2",  slidesPositions[1], armPositions[5], intakeRotPositions[4]),
 
-        OUTTAKING_3("OUTTAKING_3",  slidesPositions[3], armPositions[4], intakeRotPositions[4]),
+        OUTTAKING_3("OUTTAKING_3",  slidesPositions[1], armPositions[6], intakeRotPositions[5]),
 
-        OUTTAKING_4("OUTTAKING_4", slidesPositions[3], armPositions[5], intakeRotPositions[5]),
-        OUTTAKING_5("OUTTAKING_4", slidesPositions[3], armPositions[6], intakeRotPositions[6]),
-        OUTTAKING_6("OUTTAKING_4", slidesPositions[3], armPositions[7], intakeRotPositions[7]),
-        OUTTAKING_7("OUTTAKING_4", slidesPositions[3], armPositions[8], intakeRotPositions[8]),
+        OUTTAKING_4("OUTTAKING_4", slidesPositions[1], armPositions[7], intakeRotPositions[6]),
+        OUTTAKING_5("OUTTAKING_4", slidesPositions[1], armPositions[8], intakeRotPositions[7]),
+        OUTTAKING_6("OUTTAKING_4", slidesPositions[1], armPositions[9], intakeRotPositions[7]),
+        OUTTAKING_7("OUTTAKING_4", slidesPositions[1], armPositions[10], intakeRotPositions[7]),
 
-        HANG("HANG", slidesPositions[3], armPositions[9], intakeRotPositions[1])
+        HANG("HANG", slidesPositions[1], armPositions[11], intakeRotPositions[8])
         ;
 
         private final String debug;
@@ -90,7 +91,10 @@ public class Transport {
     public TPos transportPos = TPos.RESET;
 
     public Transport (HardwareMap hardwareMap) {
-        touchSensor = hardwareMap.get(TouchSensor.class, "touchSensor");
+
+        touchSensorClaw = hardwareMap.get(TouchSensor.class, "touchSensorClaw");
+        zeroLimit = hardwareMap.get(TouchSensor.class, "zeroLimit");
+        maxLimit = hardwareMap.get(TouchSensor.class, "maxLimit");
 
         armMotor = hardwareMap.get(DcMotorEx.class, "armMotor");
         slidesMotor = hardwareMap.get(DcMotorEx.class, "slidesMotor");
@@ -105,8 +109,6 @@ public class Transport {
         slidesMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         slidesMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        armMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, getArmPIDF());
-        slidesMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, getSlidesPIDF());
 
         intakeRotation = hardwareMap.get(ServoImplEx.class, "intakeRotation");
         rightIntake = hardwareMap.get(ServoImplEx.class, "rightIntake");
@@ -136,7 +138,7 @@ public class Transport {
         } else {
             rightClawPos = 0;
         }
-        if (gamepad2.back) { //TO DO: USE TOGGLE LOGIC
+        if (gamepad1.back) { //TODO: USE TOGGLE LOGIC
             if (automode) {
                 automode = false;
             } else {
@@ -148,7 +150,7 @@ public class Transport {
             mode = 0;
         }
         if (gamepad2.dpad_down) {
-            transportPos = TPos.INTAKING_CLOSE;
+            transportPos = TPos.INTAKING_GROUND;
             mode = 1;
         }
         if (gamepad2.dpad_left) {
@@ -156,7 +158,7 @@ public class Transport {
             mode = 1;
         }
         if (gamepad2.dpad_up) {
-            transportPos = TPos.INTAKING_FAR;
+            transportPos = TPos.INTAKING_TOP;
             mode = 1;
         }
         if (gamepad2.b) {
@@ -201,7 +203,7 @@ public class Transport {
                 rightClawPos = 2;
             }
             else {
-                if (touchSensor.isPressed()) {
+                if (touchSensorClaw.isPressed()) {
                     leftClawPos = 2;
                     rightClawPos = 2;
                 } else {
