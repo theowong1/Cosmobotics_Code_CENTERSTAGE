@@ -65,7 +65,8 @@ public class Drive {
     }
 
     public void update(Gamepad gamepad1) {
-        botHeading = normalizeAngle(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS)) + IMUOffset;
+        //TODO: ADD IMU OFFSET LATER
+        botHeading = normalizeAngle(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
         //Field Centric Drive:
         double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
         double x = gamepad1.left_stick_x;
@@ -78,9 +79,9 @@ public class Drive {
         // This ensures all the powers maintain the same ratio,
         // but only if at least one is out of the range [-1, 1]
         double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
-        if (gamepad1.start) {
-            denominator *= 2;
-        }
+//        if (gamepad1.start) {
+//            denominator *= 2;
+//        }
         double frontLeftPower = (rotY + rotX + rx) / denominator;
         double backLeftPower = (-rotY + rotX - rx) / denominator;
         double frontRightPower = (rotY - rotX - rx) / denominator;
@@ -96,20 +97,20 @@ public class Drive {
             resetImu();
         }
         //Autoturn Logic:
-        if (gamepad1.left_bumper) {
-            if (isBlue) {
-                rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(270));
-            } else {
-                rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(135));
-            }
-        }
-        if (gamepad1.right_bumper) {
-            if (isBlue) {
-                rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(225));
-            } else {
-                rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(90));
-            }
-        }
+//        if (gamepad1.left_bumper) {
+//            if (isBlue) {
+//                rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(270));
+//            } else {
+//                rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(135));
+//            }
+//        }
+//        if (gamepad1.right_bumper) {
+//            if (isBlue) {
+//                rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(225));
+//            } else {
+//                rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(90));
+//            }
+//        }
     }
     private double calcRotBasedOnIdeal(double heading, double idealHeading) {
         // Error in rotations (should always be between (-0.5,0.5))

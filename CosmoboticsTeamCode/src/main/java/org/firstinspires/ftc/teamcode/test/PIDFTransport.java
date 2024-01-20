@@ -8,6 +8,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 
 @Config
 @TeleOp
@@ -28,22 +30,35 @@ public class PIDFTransport extends OpMode {
 
     private DcMotorEx armMotor;
 
+    private ServoImplEx intakeRotation;
+    private TouchSensor zeroLimit;
+
+    public static double servoPos;
+
     @Override
     public void init() {
+        zeroLimit = hardwareMap.get(TouchSensor.class, "zeroLimit");
+        intakeRotation = hardwareMap.get(ServoImplEx.class, "intakeRotation");
+
         slidesController = new PIDController(slidesp, slidesi, slidesd);
 
         slidesMotor = hardwareMap.get(DcMotorEx.class, "slidesMotor");
+        slidesMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        slidesMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         armController = new PIDController(armp, armi, armd);
 
         armMotor = hardwareMap.get(DcMotorEx.class, "armMotor");
+        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     }
 
     @Override
     public void loop() {
-        if (gamepad1.a) {
+        intakeRotation.setPosition(servoPos);
+        if (zeroLimit.isPressed()) {
             armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
@@ -68,10 +83,9 @@ public class PIDFTransport extends OpMode {
             armMotor.setPower(armPower);
         }
 
+        telemetry.addData("ispressed", zeroLimit.isPressed());
         telemetry.addData("pos", armPos);
         telemetry.addData("target", armTarget);
-        telemetry.addData("pos", slidesPos);
-        telemetry.addData("target", slidesTarget);
         telemetry.update();
     }
 }
