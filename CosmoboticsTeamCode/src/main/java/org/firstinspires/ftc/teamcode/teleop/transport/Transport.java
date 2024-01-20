@@ -200,11 +200,11 @@ public class Transport {
             mode = 1;
         }
         if (gamepad1.dpad_left) {
-            transportPos = TPos.INTAKING_MED;
+            transportPos = TPos.INTAKING_TOP;
             mode = 1;
         }
         if (gamepad1.dpad_up) {
-            transportPos = TPos.INTAKING_TOP;
+            transportPos = TPos.DEPLOY;
             mode = 1;
         }
         if (gamepad1.b) {
