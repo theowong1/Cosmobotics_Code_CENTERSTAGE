@@ -1,8 +1,11 @@
 package org.firstinspires.ftc.teamcode.auton;
+import static org.firstinspires.ftc.teamcode.teleop.AllianceStorage.isRed;
+
 import android.util.Size;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -14,25 +17,33 @@ import org.firstinspires.ftc.vision.VisionPortal;
 
 @Config
 public class Auton {
-    private SpikePosDetector.SPIKE_POS spikePos;
+    public SpikePosDetector.SPIKE_POS spikePos;
     private SpikePosDetector pipeline;
     private VisionPortal vision;
     private Transport transport;
     private SampleMecanumDrive drive;
-    public final Pose2d standardPose = new Pose2d(0, 0, Math.toRadians(0));
-    private Pose2d leftSpikePose;
-    private Pose2d centerSpikePose;
-    private Pose2d rightSpikePose;
+    public Pose2d blueLeftBoard;
+    public Pose2d blueCenterBoard;
+    public Pose2d blueRightBoard;
+    public Pose2d redLeftBoard;
+    public Pose2d redCenterBoard;
+    public Pose2d redRightBoard;
+    public boolean isLeftClaw;
 
-    public Auton(HardwareMap hardwareMap, Pose2d leftSpikePose, Pose2d centerSpikePose, Pose2d rightSpikePose) {
-        this.leftSpikePose = leftSpikePose;
-        this.centerSpikePose = centerSpikePose;
-        this.rightSpikePose = rightSpikePose;
+    public Auton(HardwareMap hardwareMap) {
+
+        //TODO: Set These Poses
+        blueLeftBoard = new Pose2d(45, 31, Math.toRadians(180));
+        blueCenterBoard = new Pose2d(45, 28, Math.toRadians(180));
+        blueRightBoard = new Pose2d(45, 25, Math.toRadians(180));
+        redLeftBoard = new Pose2d(45, -25, Math.toRadians(190));
+        redCenterBoard = new Pose2d(45, -28, Math.toRadians(190));
+        redRightBoard = new Pose2d(45, -31, Math.toRadians(190));
 
         pipeline = new SpikePosDetector();
         spikePos = pipeline.getType();
         vision = new VisionPortal.Builder()
-                .setCamera(hardwareMap.get(WebcamName.class, "webcam"))
+                .setCamera(hardwareMap.get(WebcamName.class, "camera"))
                 .addProcessors(pipeline)
                 .setCameraResolution(new Size(640, 480))
                 .setStreamFormat(VisionPortal.StreamFormat.YUY2)
@@ -42,164 +53,210 @@ public class Auton {
         drive = new SampleMecanumDrive(hardwareMap);
         transport = new Transport(hardwareMap);
     }
-
+    public void vision() {
+        spikePos = pipeline.getType();
+    }
     public SampleMecanumDrive drive() {
         return drive;
     }
-    public final void BlueSpikeAuton() {
-        drive.setPoseEstimate(standardPose);
-        switch (spikePos) {
-            case LEFT:
-                TrajectorySequence leftSpike = drive.trajectorySequenceBuilder(standardPose)
-                        //TODO: Write Trajectory
-                        .build();
-                drive.followTrajectorySequence(leftSpike);
-                drive.setPoseEstimate(leftSpikePose);
-            case CENTER:
-                TrajectorySequence centerSpike = drive.trajectorySequenceBuilder(standardPose)
-                        //TODO: Write Trajectory
-                        .build();
-                drive.followTrajectorySequence(centerSpike);
-                drive.setPoseEstimate(centerSpikePose);
-            case RIGHT:
-                TrajectorySequence rightSpike = drive.trajectorySequenceBuilder(standardPose)
-                        //TODO: Write Trajectory
-                        .build();
-                drive.setPoseEstimate(rightSpikePose);
-                drive.followTrajectorySequence(rightSpike);
-        }
+
+    public Transport transport() {
+        return transport;
     }
-    public final void RedSpikeAuton() {
-        drive.setPoseEstimate(standardPose);
-        switch (spikePos) {
-            case LEFT:
-                TrajectorySequence leftSpike = drive.trajectorySequenceBuilder(standardPose)
-                        //TODO: Write Trajectory
-                                .build();
-                drive.followTrajectorySequence(leftSpike);
-                drive.setPoseEstimate(leftSpikePose);
-            case CENTER:
-                TrajectorySequence centerSpike = drive.trajectorySequenceBuilder(standardPose)
-                        //TODO: Write Trajectory
-                                .build();
-                drive.followTrajectorySequence(centerSpike);
-                drive.setPoseEstimate(centerSpikePose);
-            case RIGHT:
-                TrajectorySequence rightSpike = drive.trajectorySequenceBuilder(standardPose)
-                        //TODO: Write Trajectory
-                        .build();
-                drive.setPoseEstimate(rightSpikePose);
-                drive.followTrajectorySequence(rightSpike);
+
+    public Boolean leftClaw() {
+        return isLeftClaw;
+    }
+
+    public TrajectorySequence LeftBoardToLeftStack(Boolean Reverse) {
+        if (!isRed) {
+            TrajectorySequence blueLeftBoardToLeftStack = drive.trajectorySequenceBuilder(blueLeftBoard)
+                    .setReversed(Reverse)
+                    //TODO: WRITE TRAJECTORY
+                    .build();
+            return blueLeftBoardToLeftStack;
+        } else {
+            TrajectorySequence redLeftBoardToLeftStack = drive.trajectorySequenceBuilder(redLeftBoard)
+                    .setReversed(Reverse)
+                    //TODO: WRITE TRAJECTORY
+                    .build();
+            return redLeftBoardToLeftStack;
         }
     }
 
-    public void BoardAuton(TrajectorySequence leftBoard, TrajectorySequence centerBoard, TrajectorySequence rightBoard) {
-        switch (spikePos) {
-            case LEFT:
-                drive.followTrajectorySequence(leftBoard);
-            case CENTER:
-                drive.followTrajectorySequence(centerBoard);
-            case RIGHT:
-                drive.followTrajectorySequence(rightBoard);
+    public TrajectorySequence CenterBoardToLeftStack(Boolean Reverse) {
+        if (!isRed) {
+            TrajectorySequence blueCenterBoardToLeftStack = drive.trajectorySequenceBuilder(blueCenterBoard)
+                    .setReversed(Reverse)
+                    //TODO: WRITE TRAJECTORY
+                    .build();
+            return blueCenterBoardToLeftStack;
+        } else {
+            TrajectorySequence redCenterBoardToLeftStack = drive.trajectorySequenceBuilder(redCenterBoard)
+                    .setReversed(Reverse)
+                    //TODO: WRITE TRAJECTORY
+                    .build();
+            return redCenterBoardToLeftStack;
         }
     }
 
-
-    public void spikeToStack(TrajectorySequence leftStack, TrajectorySequence centerStack, TrajectorySequence rightStack) {
-        switch (spikePos) {
-            case LEFT:
-                drive.followTrajectorySequence(leftStack);
-            case CENTER:
-                drive.followTrajectorySequence(centerStack);
-            case RIGHT:
-                drive.followTrajectorySequence(rightStack);
+    public TrajectorySequence RightBoardToLeftStack(Boolean Reverse) {
+        if (!isRed) {
+            TrajectorySequence blueRightBoardToLeftStack = drive.trajectorySequenceBuilder(blueRightBoard)
+                    .setReversed(Reverse)
+                    //TODO: WRITE TRAJECTORY
+                    .build();
+           return blueRightBoardToLeftStack;
+        } else {
+            TrajectorySequence redRightBoardToLeftStack = drive.trajectorySequenceBuilder(redRightBoard)
+                    .setReversed(Reverse)
+                    //TODO: WRITE TRAJECTORY
+                    .build();
+            return redRightBoardToLeftStack;
         }
     }
 
-    public void ToStack(TrajectorySequence leftStack, TrajectorySequence centerStack, TrajectorySequence rightStack) {
-        switch (spikePos) {
-            case LEFT:
-                drive.followTrajectorySequence(leftStack);
-            case CENTER:
-                drive.followTrajectorySequence(centerStack);
-            case RIGHT:
-                drive.followTrajectorySequence(rightStack);
+    public TrajectorySequence LeftBoardToRightStack(Boolean Reverse) {
+        if (!isRed) {
+            TrajectorySequence blueLeftBoardToRightStack = drive.trajectorySequenceBuilder(blueLeftBoard)
+                    .setReversed(Reverse)
+                    //TODO: WRITE TRAJECTORY
+                    .build();
+            return blueLeftBoardToRightStack;
+        } else {
+            TrajectorySequence redLeftBoardToRightStack = drive.trajectorySequenceBuilder(redLeftBoard)
+                    .setReversed(Reverse)
+                    //TODO: WRITE TRAJECTORY
+                    .build();
+            return redLeftBoardToRightStack;
         }
     }
 
-    public void FromStack(TrajectorySequence leftBoard, TrajectorySequence centerBoard, TrajectorySequence rightBoard) {
-        switch (spikePos) {
-            case LEFT:
-                drive.followTrajectorySequence(leftBoard);
-            case CENTER:
-                drive.followTrajectorySequence(centerBoard);
-            case RIGHT:
-                drive.followTrajectorySequence(rightBoard);
+    public TrajectorySequence CenterBoardToRightStack(Boolean Reverse) {
+        if (!isRed) {
+            TrajectorySequence blueCenterBoardToRightStack = drive.trajectorySequenceBuilder(blueCenterBoard)
+                    .setReversed(Reverse)
+                    //TODO: WRITE TRAJECTORY
+                    .build();
+            return blueCenterBoardToRightStack;
+        } else {
+            TrajectorySequence redCenterBoardToRightStack = drive.trajectorySequenceBuilder(redCenterBoard)
+                    .setReversed(Reverse)
+                    //TODO: WRITE TRAJECTORY
+                    .build();
+            return redCenterBoardToRightStack;
         }
     }
 
-    public final void BoardPark(TrajectorySequence leftBoardPark, TrajectorySequence centerBoardPark, TrajectorySequence rightBoardPark) {
-        switch (spikePos) {
-            case LEFT:
-                drive.followTrajectorySequence(leftBoardPark);
-            case CENTER:
-                drive.followTrajectorySequence(centerBoardPark);
-            case RIGHT:
-                drive.followTrajectorySequence(rightBoardPark);
+    public TrajectorySequence RightBoardToRightStack(Boolean Reverse) {
+        if (!isRed) {
+            TrajectorySequence blueRightBoardToRightStack = drive.trajectorySequenceBuilder(blueRightBoard)
+                    .setReversed(Reverse)
+                    //TODO: WRITE TRAJECTORY
+                    .build();
+            return blueRightBoardToRightStack;
+        } else {
+            TrajectorySequence redRightBoardToRightStack = drive.trajectorySequenceBuilder(redRightBoard)
+                    .setReversed(Reverse)
+                    //TODO: WRITE TRAJECTORY
+                    .build();
+            return redRightBoardToRightStack;
         }
     }
 
-    public void Reset() {
-        transport.transportPos = Transport.TPos.RESET;
-        transport.setTPos();
+    public TrajectorySequence LeftBoardPark(Boolean goLeft) {
+        if (goLeft && isRed) {
+            TrajectorySequence redLeftBoardParkLeft = drive.trajectorySequenceBuilder(redLeftBoard)
+                    .UNSTABLE_addTemporalMarkerOffset(.5, ()->{transport.reset();})
+                    .strafeTo(new Vector2d(45, -4))
+                    .strafeTo(new Vector2d(63.25, -4))
+                    .build();
+            return redLeftBoardParkLeft;
+        } else if (goLeft && !isRed) {
+            TrajectorySequence blueLeftBoardParkLeft = drive.trajectorySequenceBuilder(blueLeftBoard)
+                    .addTemporalMarker(()->{transport.reset();})
+                    .strafeTo(new Vector2d(45, 63.25))
+                    .strafeTo(new Vector2d(63.25, 63.25))
+                    .build();
+            return blueLeftBoardParkLeft;
+        } else if (!goLeft && isRed){
+            TrajectorySequence redLeftBoardParkRight = drive.trajectorySequenceBuilder(redLeftBoard)
+                    .addTemporalMarker(()->{transport.reset();})
+                    .strafeTo(new Vector2d(45, -63.25))
+                    .strafeTo(new Vector2d(63.25, -63.25))
+                    .build();
+            return redLeftBoardParkRight;
+        } else {
+            TrajectorySequence blueLeftBoardParkRight = drive.trajectorySequenceBuilder(blueLeftBoard)
+                    .addTemporalMarker(()->{transport.reset();})
+                    .strafeTo(new Vector2d(45, 7))
+                    .strafeTo(new Vector2d(63.25, 7))
+                    .build();
+            return blueLeftBoardParkRight;
+        }
     }
 
-    public void Outtaking() {
-        transport.transportPos = Transport.TPos.OUTTAKING_1;
-        transport.setTPos();
+    public TrajectorySequence CenterBoardPark(Boolean goLeft) {
+        if (goLeft && isRed) {
+            TrajectorySequence redCenterBoardParkLeft = drive.trajectorySequenceBuilder(redCenterBoard)
+                    .addTemporalMarker(()->{transport.reset();})
+                    .strafeTo(new Vector2d(45, -7))
+                    .strafeTo(new Vector2d(63.25, -7))
+                    .build();
+            return redCenterBoardParkLeft;
+        } else if (goLeft && !isRed) {
+            TrajectorySequence blueCenterBoardParkLeft = drive.trajectorySequenceBuilder(blueCenterBoard)
+                    .addTemporalMarker(()->{transport.reset();})
+                    .strafeTo(new Vector2d(45, 63.25))
+                    .strafeTo(new Vector2d(63.25, 63.25))
+                    .build();
+            return blueCenterBoardParkLeft;
+        } else if (!goLeft && isRed){
+            TrajectorySequence redCenterBoardParkRight = drive.trajectorySequenceBuilder(redCenterBoard)
+                    .addTemporalMarker(()->{transport.reset();})
+                    .strafeTo(new Vector2d(45, -63.25))
+                    .strafeTo(new Vector2d(63.25, -63.25))
+                    .build();
+            return redCenterBoardParkRight;
+        } else {
+            TrajectorySequence blueCenterBoardParkRight = drive.trajectorySequenceBuilder(blueCenterBoard)
+                    .addTemporalMarker(()->{transport.reset();})
+                    .strafeTo(new Vector2d(45, 7))
+                    .strafeTo(new Vector2d(63.25, 7))
+                    .build();
+            return blueCenterBoardParkRight;
+        }
     }
 
-    public void IntakingBottom() {
-        transport.transportPos = Transport.TPos.INTAKING_GROUND;
-        transport.setTPos();
-    }
-
-    public void IntakingMed() {
-        transport.transportPos = Transport.TPos.INTAKING_MED;
-        transport.setTPos();
-    }
-
-    public void IntakingTop() {
-        transport.transportPos = Transport.TPos.INTAKING_TOP;
-    }
-
-    public void PlaceLeftPixel() {
-        transport.leftClawPos = 2;
-        transport.setTPos();
-    }
-
-    public void PlaceRightPixel() {
-        transport.rightClawPos = 2;
-        transport.setTPos();
-    }
-
-    public void PlaceLeftPixelHolding() {
-        transport.leftClawPos = 1;
-        transport.setTPos();
-    }
-
-    public void PlaceRightPixelHolding() {
-        transport.rightClawPos = 1;
-        transport.setTPos();
-    }
-
-    public void IntakeLeftPixel() {
-        transport.leftClawPos = 0;
-        transport.setTPos();
-    }
-
-    public void IntakeRightPixel() {
-        transport.rightClawPos = 0;
-        transport.setTPos();
+    public TrajectorySequence RightBoardPark(Boolean goLeft) {
+        if (goLeft && isRed) {
+            TrajectorySequence redRightBoardParkLeft = drive.trajectorySequenceBuilder(redRightBoard)
+                    .addTemporalMarker(()->{transport.reset();})
+                    .strafeTo(new Vector2d(45, -7))
+                    .strafeTo(new Vector2d(63.25, -7))
+                    .build();
+            return redRightBoardParkLeft;
+        } else if (goLeft && !isRed) {
+            TrajectorySequence blueRightBoardParkLeft = drive.trajectorySequenceBuilder(blueRightBoard)
+                    .addTemporalMarker(()->{transport.reset();})
+                    .strafeTo(new Vector2d(45, 63.25))
+                    .strafeTo(new Vector2d(63.25, 63.25))
+                    .build();
+            return blueRightBoardParkLeft;
+        } else if (!goLeft && isRed){
+            TrajectorySequence redRightBoardParkRight = drive.trajectorySequenceBuilder(redRightBoard)
+                    .addTemporalMarker(()->{transport.reset();})
+                    .strafeTo(new Vector2d(45, -63.25))
+                    .strafeTo(new Vector2d(63.25, -63.25))
+                    .build();
+            return redRightBoardParkRight;
+        } else {
+            TrajectorySequence blueRightBoardParkRight = drive.trajectorySequenceBuilder(blueRightBoard)
+                    .UNSTABLE_addTemporalMarkerOffset(.5, ()->{transport.reset();})
+                    .strafeTo(new Vector2d(45, 7))
+                    .strafeTo(new Vector2d(63.25, 7))
+                    .build();
+            return blueRightBoardParkRight;
+        }
     }
 }

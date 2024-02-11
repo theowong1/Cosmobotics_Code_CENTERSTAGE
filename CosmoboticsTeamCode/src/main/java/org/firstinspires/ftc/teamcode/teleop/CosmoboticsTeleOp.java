@@ -1,29 +1,40 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
 
+import com.acmerobotics.dashboard.config.Config;
+import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.teleop.drive.Drive;
 import org.firstinspires.ftc.teamcode.teleop.misc.Misc;
 import org.firstinspires.ftc.teamcode.teleop.transport.Transport;
+import org.firstinspires.ftc.teamcode.teleop.utils.Controls;
 
+@Config
 @TeleOp
 public class CosmoboticsTeleOp extends OpMode {
+    GamepadEx gamepad1;
+    GamepadEx gamepad2;
     Drive drive;
     Transport transport;
     Misc misc;
+
+    Controls controls;
     @Override
     public void init() {
-        drive = new Drive(hardwareMap);
+        drive = new Drive(gamepad1, hardwareMap);
         transport = new Transport(hardwareMap);
         misc = new Misc(hardwareMap);
+        controls = new Controls(gamepad1, gamepad2, drive, transport, misc);
     }
 
     @Override
     public void loop() {
+        controls.update();
         drive.update(gamepad1);
-        transport.update(gamepad1, gamepad2);
-        misc.update(gamepad1, gamepad2);
+        transport.update();
+        misc.update();
+        telemetry.update();
     }
 }

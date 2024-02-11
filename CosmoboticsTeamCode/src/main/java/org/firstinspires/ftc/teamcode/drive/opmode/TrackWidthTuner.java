@@ -8,6 +8,7 @@ import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.util.MovingStatistics;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -27,19 +28,16 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 @Config
 @Autonomous(group = "drive")
 public class TrackWidthTuner extends LinearOpMode {
+    public ServoImplEx intakeRot;
     public static double ANGLE = 180; // deg
     public static int NUM_TRIALS = 5;
     public static int DELAY = 1000; // ms
 
     @Override
     public void runOpMode() throws InterruptedException {
-        DcMotor armMotor = hardwareMap.dcMotor.get("ArmMotor");
-        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armMotor.setTargetPosition(0);
-        armMotor.setPower(1);
-        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        intakeRot = hardwareMap.get(ServoImplEx.class, "intakeRotation");
+        intakeRot.setPosition(.05);
+
         Telemetry telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);

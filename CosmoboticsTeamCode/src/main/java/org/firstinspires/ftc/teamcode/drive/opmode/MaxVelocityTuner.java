@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -27,6 +28,7 @@ import java.util.Objects;
 @Config
 @Autonomous(group = "drive")
 public class MaxVelocityTuner extends LinearOpMode {
+    public ServoImplEx intakeRot;
     public static double RUNTIME = 2.0;
 
     private ElapsedTime timer;
@@ -36,13 +38,8 @@ public class MaxVelocityTuner extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        DcMotor armMotor = hardwareMap.dcMotor.get("ArmMotor");
-        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armMotor.setTargetPosition(0);
-        armMotor.setPower(1);
-        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        intakeRot = hardwareMap.get(ServoImplEx.class, "intakeRotation");
+        intakeRot.setPosition(.05);
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 

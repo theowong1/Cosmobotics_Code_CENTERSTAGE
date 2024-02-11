@@ -18,6 +18,7 @@ import com.acmerobotics.roadrunner.profile.MotionState;
 import com.acmerobotics.roadrunner.util.NanoClock;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -44,6 +45,7 @@ import java.util.Objects;
 @Config
 @Autonomous(group = "drive")
 public class ManualFeedforwardTuner extends LinearOpMode {
+    public ServoImplEx intakeRot;
     public static double DISTANCE = 72; // in
 
     private FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -65,6 +67,8 @@ public class ManualFeedforwardTuner extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        intakeRot = hardwareMap.get(ServoImplEx.class, "intakeRotation");
+        intakeRot.setPosition(.05);
         if (RUN_USING_ENCODER) {
             RobotLog.setGlobalErrorMsg("Feedforward constants usually don't need to be tuned " +
                     "when using the built-in drive motor velocity PID.");

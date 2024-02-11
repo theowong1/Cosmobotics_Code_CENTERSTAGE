@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.PIDController;
+import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -11,9 +12,12 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
+import org.firstinspires.ftc.teamcode.teleop.drive.Drive;
+
 @Config
 @TeleOp
 public class PIDFTransport extends OpMode {
+    private Drive drive;
     private PIDController slidesController;
 
     public static double slidesp = .022, slidesi = 0, slidesd = 0.00038;
@@ -31,12 +35,23 @@ public class PIDFTransport extends OpMode {
     private DcMotorEx armMotor;
 
     private ServoImplEx intakeRotation;
+    private ServoImplEx leftClaw;
+    private ServoImplEx rightClaw;
     private TouchSensor zeroLimit;
 
     public static double servoPos;
 
+    public static double leftClawPos;
+    public static double rightClawPos;
+
+    private GamepadEx gamepad1;
+
     @Override
     public void init() {
+        drive = new Drive(gamepad1, hardwareMap);
+        leftClaw = hardwareMap.get(ServoImplEx.class, "leftIntake");
+        rightClaw = hardwareMap.get(ServoImplEx.class, "rightIntake");
+
         zeroLimit = hardwareMap.get(TouchSensor.class, "zeroLimit");
         intakeRotation = hardwareMap.get(ServoImplEx.class, "intakeRotation");
 
@@ -57,7 +72,11 @@ public class PIDFTransport extends OpMode {
 
     @Override
     public void loop() {
+        drive.update(gamepad1);
         intakeRotation.setPosition(servoPos);
+        leftClaw.setPosition(leftClawPos);
+        rightClaw.setPosition(rightClawPos);
+
         if (zeroLimit.isPressed()) {
             armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -70,18 +89,16 @@ public class PIDFTransport extends OpMode {
 
         double armPower = armpid + armff;
 
-
-
         slidesController.setPID(slidesp, slidesi, slidesd);
         int slidesPos = slidesMotor.getCurrentPosition();
         double slidespid = slidesController.calculate(slidesPos, slidesTarget);
 
         double slidespower = slidespid;
 
-        if (!gamepad1.b) {
-            slidesMotor.setPower(slidespower);
-            armMotor.setPower(armPower);
-        }
+//        if (!gamepad1.b) {
+//            slidesMotor.setPower(slidespower);
+//            armMotor.setPower(armPower);
+//        }
 
         telemetry.addData("ispressed", zeroLimit.isPressed());
         telemetry.addData("pos", armPos);

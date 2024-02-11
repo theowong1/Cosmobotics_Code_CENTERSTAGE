@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
@@ -13,18 +14,14 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 @Config
 @Autonomous(group = "drive")
 public class TurnTest extends LinearOpMode {
+    public ServoImplEx intakeRot;
 
     public static double ANGLE = 180; // deg
 
     @Override
     public void runOpMode() throws InterruptedException {
-        DcMotor armMotor = hardwareMap.dcMotor.get("ArmMotor");
-        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armMotor.setTargetPosition(0);
-        armMotor.setPower(1);
-        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        intakeRot = hardwareMap.get(ServoImplEx.class, "intakeRotation");
+        intakeRot.setPosition(.05);
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
         waitForStart();

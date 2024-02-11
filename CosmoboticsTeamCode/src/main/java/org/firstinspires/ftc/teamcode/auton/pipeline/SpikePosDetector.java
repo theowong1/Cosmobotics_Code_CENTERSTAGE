@@ -10,7 +10,9 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
-public class SpikePosDetector implements VisionProcessor {
+import org.openftc.easyopencv.OpenCvPipeline;
+
+public class SpikePosDetector implements VisionProcessor  {
     private static final Scalar BLUE = new Scalar(0, 0, 255);
     private static final Scalar GREEN = new Scalar(0, 255, 0);
     private static final Scalar RED = new Scalar(255, 0, 0);
@@ -18,16 +20,16 @@ public class SpikePosDetector implements VisionProcessor {
     //640x480
 
     //center
-    Point centerLeft = new Point(36, 346);
-    Point centerRight = new Point(190, 418);
+    Point centerLeft = new Point(340, 290);
+    Point centerRight = new Point(400, 330);
 
     //right
-    Point rightLeft = new Point(454, 314);
-    Point rightRight = new Point(611, 423);
+    Point rightLeft = new Point(75, 320);
+    Point rightRight = new Point(175, 370);
 
     //ground color/shade
-    Point groundLeft = new Point(290,460);
-    Point groundRight = new Point(350,430);
+    Point groundLeft = new Point(310,440);
+    Point groundRight = new Point(370,460);
 
     Mat centerSubmat = new Mat();
     Mat rightSubmat = new Mat();
@@ -102,13 +104,14 @@ public class SpikePosDetector implements VisionProcessor {
         }
 
         if(center && right){
-            pos = (centerValue < rightValue) ? SPIKE_POS.CENTER : SPIKE_POS.RIGHT;
+            pos = (centerValue > rightValue) ? SPIKE_POS.CENTER : SPIKE_POS.LEFT;
+            pos = (centerValue > rightValue) ? SPIKE_POS.CENTER : SPIKE_POS.LEFT;
         } else if (center){
             pos = SPIKE_POS.CENTER;
         } else if (right){
-            pos = SPIKE_POS.RIGHT;
-        } else {
             pos = SPIKE_POS.LEFT;
+        } else {
+            pos = SPIKE_POS.RIGHT;
         }
 
         // draws rectangles where the submats are

@@ -12,7 +12,6 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.teleop.utils.Toggle;
 
 import java.util.ArrayList;
 import java.util.Arrays;

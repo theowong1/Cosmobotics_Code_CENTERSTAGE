@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.teleop.transport;
 
+import static org.firstinspires.ftc.teamcode.teleop.AllianceStorage.isRed;
+
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -9,11 +11,10 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.TouchSensor;
-import org.firstinspires.ftc.teamcode.teleop.utils.Toggle;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class Transport {
-    private Toggle automode;
-    private Toggle intake;
     private DcMotorEx slidesMotor;
 
     private DcMotorEx armMotor;
@@ -26,86 +27,92 @@ public class Transport {
     private TouchSensor zeroLimit;
     private PIDController slidesController;
 
-    private final double slidesp = .022, slidesi = 0, slidesd = 0.00038;
-    private int slidesTarget = 0;
+    public static double slidesp = .022, slidesi = 0, slidesd = 0.00038;
+    public static int slidesTarget = 0;
     private PIDController armController;
 
-    private final double armp = 0.006, armi = 0, armd = 0.0004; //TODO: Tune in Relation to Slides
-    private double f = 0.06;
-    private int armTarget = 0;
+    public static double armp = 0.006, armi = 0, armd = 0.0004; //TODO: Tune in Relation to Slides
+    public static double f = 0.06;
+    public static int armTarget = 0;
 
     private final double arm_ticks_in_degrees = 1425.1 / 1800;
 
-    private int mode = 0;
+    public int mode = 0;
 
     //Safe, Intaking Ground, Intaking Med, Intaking Top, Parallels (.5, 1st, 1.5, 2nd, 2.5, 3rd, 3.5), Hang
-    public static final int[] armPositions = {0, 3500, 3400, 3300, 300, 450, 600, 750, 900, 1050, 1200, 1780};
+    public static final int[] armPositions = {0, 3500, 3300, 3250, 450, 500, 600, 775, 775, 850, 900, 1500};
 
-    //Safe, Extended
-    public static final int[] slidesPositions = {0, 3000};
+    //Safe, Extended, Mid-Way
+    public static final int[] slidesPositions = {0, 2000, 3000, 1500, 1750, 2700, 2950}; //TODO: Re-Implement Slides (For Outtaking, Find the Maximum Extension at the Right Height that Allows for Stable Driving)
     //Safe, Deploy, Intaking, Intaking Off-Ground, Parallels (.5, 1st, 1.5, 2 - 3.5), Hang
-    public static final double[] intakeRotPositions = {.05, .9, .38, .42, .85, .9, .95, 1, .35};
+    public static final double[] intakeRotPositions = {.05, .9, .38, .42, .95, 1, .35};
 
     //Idx
     public static int leftClawPos = 0;
     public static int rightClawPos = 0;
 
     //Closed, Inter, Open
-    public static final double[] clawPositions = {1, .95, .375};
+    public static final double[] clawPositions = {0, .55, 1};
+
+    public boolean armInRange;
+
+    public boolean slidesInRange;
+    public boolean slidesAtZero;
 
     //Neutral, In-taking, Out-taking
     public enum TPos {
         //Reset:
-        RESET("RESET", slidesPositions[0], armPositions[0], intakeRotPositions[0]),
+        RESET("RESET", armPositions[0], intakeRotPositions[0], slidesPositions[0]),
 
         //Deploy:
-        DEPLOY("DEPLOY", slidesPositions[0], armPositions[1], intakeRotPositions[1]),
+        DEPLOY("DEPLOY", armPositions[1], intakeRotPositions[1], slidesPositions[0]),
 
         //Intaking Positions:
-        INTAKING_GROUND("INTAKING_GROUND", slidesPositions[1], armPositions[1], intakeRotPositions[2]),
-        INTAKING_MED("INTAKING_MED", slidesPositions[1], armPositions[2], intakeRotPositions[3]),
-        INTAKING_TOP("INTAKING_STACK", slidesPositions[1], armPositions[3], intakeRotPositions[3]),
+        INTAKING_CLOSE_GROUND("INTAKING_CLOSE_GROUND", armPositions[1], intakeRotPositions[2], slidesPositions[1]),
+        INTAKING_FAR_GROUND("INTAKING_FAR_GROUND", armPositions[1], intakeRotPositions[2], slidesPositions[6]),
+        INTAKING_MED_GROUND("INTAKING_MED_GROUND", armPositions[2], intakeRotPositions[2], slidesPositions[2]),
+        INTAKING_CLOSE_MEDSTACK("INTAKING_CLOSE_MEDSTACK", armPositions[2], intakeRotPositions[6], slidesPositions[1]),
+        INTAKING_FAR_MEDSTACK("INTAKING_FAR_MEDSTACK", armPositions[2], intakeRotPositions[6], slidesPositions[2]),
+        INTAKING_CLOSE_TOPSTACK("INTAKING_CLOSE_TOPSTACK", armPositions[3], intakeRotPositions[6], slidesPositions[1]),
+        INTAKING_FAR_TOPSTACK("INTAKING_FAR_TOPSTACK", armPositions[3], intakeRotPositions[6], slidesPositions[2]),
         //Outtaking Positions:
-        OUTTAKING_1("OUTTAKING_1", slidesPositions[1], armPositions[4], intakeRotPositions[4]),
+        OUTTAKING_1("OUTTAKING_1", armPositions[4], intakeRotPositions[4], slidesPositions[1]),
 
-        OUTTAKING_2("OUTTAKING_2", slidesPositions[1], armPositions[5], intakeRotPositions[5]),
+        OUTTAKING_2("OUTTAKING_2", armPositions[5], intakeRotPositions[4], slidesPositions[1]),
 
-        OUTTAKING_3("OUTTAKING_3", slidesPositions[1], armPositions[6], intakeRotPositions[6]),
+        OUTTAKING_3("OUTTAKING_3", armPositions[6], intakeRotPositions[4], slidesPositions[1]),
 
-        OUTTAKING_4("OUTTAKING_4", slidesPositions[1], armPositions[7], intakeRotPositions[7]),
-        OUTTAKING_5("OUTTAKING_4", slidesPositions[1], armPositions[8], intakeRotPositions[7]),
-        OUTTAKING_6("OUTTAKING_4", slidesPositions[1], armPositions[9], intakeRotPositions[7]),
-        OUTTAKING_7("OUTTAKING_4", slidesPositions[1], armPositions[10], intakeRotPositions[7]),
+        OUTTAKING_4("OUTTAKING_4", armPositions[7], intakeRotPositions[5], slidesPositions[1]),
+        OUTTAKING_5("OUTTAKING_5", armPositions[7], intakeRotPositions[5], slidesPositions[5]),
+        OUTTAKING_6("OUTTAKING_6", armPositions[9], intakeRotPositions[5], slidesPositions[5]),
+        OUTTAKING_7("OUTTAKING_7", armPositions[9], intakeRotPositions[5], slidesPositions[2]),
 
-        HANG("HANG", slidesPositions[1], armPositions[11], intakeRotPositions[8])
+        HANG("HANG", armPositions[11], intakeRotPositions[6], slidesPositions[2]),
+        HANG_LOW("HANG_LOW", armPositions[11], intakeRotPositions[6], slidesPositions[0])
         ;
 
         private final String debug;
         private final int armPosition;
-
-        private final int slidesPosition;
         private final double intakeRotPosition;
 
-        TPos(String debug, int slidesPosition, int armPosition, double intakeRotPosition) {
+        private final int slidesPosition;
+
+        TPos(String debug, int armPosition, double intakeRotPosition, int slidesPosition) {
             this.debug = debug;
-            this.slidesPosition = slidesPosition;
             this.armPosition = armPosition;
             this.intakeRotPosition = intakeRotPosition;
+            this.slidesPosition = slidesPosition;
         }
 
         public String toString() { return debug; }
         public int armPos() { return armPosition; }
-
-        public int slidesPos() {return slidesPosition; }
         public double intakeRotPos() { return intakeRotPosition; }
+        public int slidesPos() {return slidesPosition; }
     }
 
     public TPos transportPos = TPos.RESET;
 
     public Transport (HardwareMap hardwareMap) {
-        automode = new Toggle(false);
-        intake = new Toggle(false);
-
         clawSensor = hardwareMap.get(TouchSensor.class, "clawSensor");
         zeroLimit = hardwareMap.get(TouchSensor.class, "zeroLimit");
 
@@ -130,35 +137,52 @@ public class Transport {
         leftIntake = hardwareMap.get(ServoImplEx.class, "leftIntake");
 
         intakeRotation.setDirection(ServoImplEx.Direction.FORWARD);
-        rightIntake.setDirection(ServoImplEx.Direction.FORWARD);
-        leftIntake.setDirection(ServoImplEx.Direction.REVERSE);
+        rightIntake.setDirection(ServoImplEx.Direction.REVERSE);
+        leftIntake.setDirection(ServoImplEx.Direction.FORWARD);
+
+        intakeRotation.setPosition(.05);
+        rightIntake.setPosition(0);
+        leftIntake.setPosition(0);
     }
 
 
     public void setTPos() {
-        intakeRotation.setPosition(transportPos.intakeRotPos());
-        if (slidesMotor.getCurrentPosition() < 10) {
-            armTarget = transportPos.armPos();
-            while (Math.abs(armTarget - armMotor.getCurrentPosition()) > 50) { //TODO: Finite State Mechanics
-
-            }
-            slidesTarget = transportPos.slidesPos();
-        } else { //TODO: FINITE STATE MECHANICS
+        armInRange = Math.abs(transportPos.armPos() - armMotor.getCurrentPosition()) < 50;
+        slidesInRange = Math.abs(transportPos.slidesPos() - slidesMotor.getCurrentPosition()) < 15;
+        slidesAtZero = slidesMotor.getCurrentPosition() < 50;
+        if (!slidesAtZero && !armInRange) {
             slidesTarget = 0;
-            while (Math.abs(slidesTarget - slidesMotor.getCurrentPosition()) > 10) {
-
-            }
+        }
+        if (slidesAtZero && !armInRange) {
             armTarget = transportPos.armPos();
-            while (Math.abs(armTarget - armMotor.getCurrentPosition()) > 50) {
-
-            }
+        }
+        if (!slidesInRange && armInRange) {
             slidesTarget = transportPos.slidesPos();
         }
-        leftIntake.setPosition(clawPositions[leftClawPos]);
-        rightIntake.setPosition(clawPositions[rightClawPos]);
+
+        if (mode == 1 && slidesAtZero && armInRange) {
+            leftIntake.setPosition(clawPositions[2]);
+            rightIntake.setPosition(clawPositions[2]);
+        } else if (mode == 0 && transportPos.debug != "AUTO_DEPLOY" || slidesAtZero && transportPos.debug != "AUTO_DEPLOY") {
+            leftIntake.setPosition(clawPositions[0]);
+            rightIntake.setPosition(clawPositions[0]);
+        } else {
+            leftIntake.setPosition(clawPositions[leftClawPos]);
+            rightIntake.setPosition(clawPositions[rightClawPos]);
+        }
+
+        if (mode != 2) {
+            intakeRotation.setPosition(transportPos.intakeRotPos());
+        }
+        if (mode == 2 && !armInRange) {
+            intakeRotation.setPosition(0.35);
+        }
+        if (mode == 2 && armInRange) {
+            intakeRotation.setPosition(transportPos.intakeRotPos());
+        }
     }
 
-    public void update(Gamepad gamepad1, Gamepad gamepad2) {
+    public void update() {
         int armPos = armMotor.getCurrentPosition();
         double armpid = armController.calculate(armPos, armTarget);
         double armff = Math.cos(Math.toRadians(armTarget / arm_ticks_in_degrees)) * f;
@@ -174,99 +198,138 @@ public class Transport {
 
         slidesMotor.setPower(slidesPower);
 
-//        automode.update(gamepad1.back);
-        intake.update(gamepad1.dpad_up);
         if (zeroLimit.isPressed()) {
             armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
-        if (gamepad1.left_trigger != 0) {
-            leftClawPos = 2;
-        } else {
-            leftClawPos = 0;
-        }
-        if (gamepad1.right_trigger != 0) {
-            rightClawPos = 2;
-        } else {
-            rightClawPos = 0;
-        }
+        setTPos();
+    }
 
-        if (gamepad1.dpad_right) {
-            transportPos = TPos.RESET;
-            mode = 0;
-        }
-        if (gamepad1.dpad_down) {
-            transportPos = TPos.INTAKING_GROUND;
-            mode = 1;
-        }
-        if (gamepad1.dpad_left) {
-            transportPos = TPos.INTAKING_TOP;
-            mode = 1;
-        }
-        if (gamepad1.dpad_up) {
-            transportPos = TPos.DEPLOY;
-            mode = 1;
-        }
-        if (gamepad1.b) {
-            transportPos = TPos.OUTTAKING_1;
-            mode = 2;
-        }
-        if (gamepad1.a) {
-            transportPos = TPos.OUTTAKING_2;
-            mode = 2;
-        }
-        if (gamepad1.x) {
-            transportPos = TPos.OUTTAKING_3;
-            mode = 2;
-        }
-        if (gamepad1.y) {
-            transportPos = TPos.OUTTAKING_4;
-            mode = 2;
-        }
-        if (gamepad1.left_bumper) {
-            transportPos = TPos.OUTTAKING_5;
-            mode = 2;
-        }
-        if (gamepad1.right_bumper) {
-            transportPos = TPos.OUTTAKING_6;
-            mode = 2;
-        }
-//        if (gamepad2.left_stick_button) {
-//            transportPos = TPos.OUTTAKING_7;
-//            mode = 2;
-//        }
-//        if (gamepad2.right_stick_button) {
-//            transportPos = TPos.HANG;
-//            mode = 2;
-//        }
-        if (intake.value() == true) {
-            if (transportPos == TPos.DEPLOY) {
-                transportPos = TPos.INTAKING_GROUND;
-                mode = 1;
-            } else {
-                transportPos = TPos.DEPLOY;
-                mode = 1;
+    public void autoModeOn() {
+        if (mode == 2) {
+            if (clawSensor.isPressed()) {
+                leftClawPos = 2;
+                rightClawPos = 2;
             }
         }
-//        if (automode.value() == true) {
-//            if (mode == 0) {
-//                leftClawPos = 0;
-//                rightClawPos = 0;
-//            }
-//            else if (mode == 1) {
-//                leftClawPos = 2;
-//                rightClawPos = 2;
-//            }
-//            else {
-//                if (clawSensor.isPressed()) {
-//                    leftClawPos = 2;
-//                    rightClawPos = 2;
-//                } else {
-//                    leftClawPos = 0;
-//                    rightClawPos = 0;
-//                }
-//            }
-//        }
+    }
+    public void autoModeOff() {
+
+    }
+    public void reset() {
+        transportPos = TPos.RESET;
+        mode = 0;
+    }
+    //Claw:
+    public void closeLeftClaw() { leftClawPos = 0; }
+    public void closeRightClaw() {
+        rightClawPos = 0;
+    }
+    public void medLeftClaw() {
+        leftClawPos = 1;
+    }
+    public void medRightClaw() { rightClawPos = 1; }
+    public void fullLeftClaw() {
+        leftClawPos = 2;
+    }
+    public void fullRightClaw() {
+        rightClawPos = 2;
+    }
+    //Intaking:
+    public void closeIntaking() {
+        transportPos = TPos.DEPLOY;
+        mode = 1;
+    }
+    public void medIntaking() {
+        transportPos = TPos.INTAKING_MED_GROUND;
+        mode = 1;
+    }
+    public void farIntaking() {
+        transportPos = TPos.INTAKING_FAR_GROUND;
+        mode = 1;
+    }
+
+    public void closeMedStack() {
+        transportPos = TPos.INTAKING_CLOSE_MEDSTACK;
+        mode = 1;
+    }
+    public void closeTopStack() {
+        transportPos = TPos.INTAKING_CLOSE_TOPSTACK;
+        mode = 1;
+    }
+
+    public void farMedStack() {
+        transportPos = TPos.INTAKING_FAR_MEDSTACK;
+        mode = 1;
+    }
+    public void farTopStack() {
+        transportPos = TPos.INTAKING_FAR_TOPSTACK;
+        mode = 1;
+    }
+    //Outtaking:
+    public void half() {
+        transportPos = TPos.OUTTAKING_1;
+        mode = 2;
+    }
+    public void one() {
+        transportPos = TPos.OUTTAKING_2;
+        mode = 2;
+    }
+    public void oneHalf() {
+        transportPos = TPos.OUTTAKING_3;
+        mode = 2;
+    }
+    public void two() {
+        transportPos = TPos.OUTTAKING_4;
+        mode = 2;
+    }
+    public void twoHalf() {
+        transportPos = TPos.OUTTAKING_5;
+        mode = 2;
+    }
+    public void three() {
+        transportPos = TPos.OUTTAKING_6;
+        mode = 2;
+    }
+    public void threeHalf() {
+        transportPos = TPos.OUTTAKING_7;
+        mode = 2;
+    }
+
+    public void update(Gamepad gamepad1, Gamepad gamepad2, Telemetry telemetry) {
+        int armPos = armMotor.getCurrentPosition();
+        double armpid = armController.calculate(armPos, armTarget);
+        double armff = Math.cos(Math.toRadians(armTarget / arm_ticks_in_degrees)) * f;
+
+        double armPower = armpid + armff;
+
+        armMotor.setPower(armPower);
+
+        int slidesPos = slidesMotor.getCurrentPosition();
+        double slidespid = slidesController.calculate(slidesPos, slidesTarget);
+
+        double slidesPower = slidespid;
+
+        slidesMotor.setPower(slidesPower);
+
+        if (zeroLimit.isPressed()) {
+            armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
+
         setTPos();
+
+        telemetry.addData("Current State: ", transportPos.debug);
+        telemetry.addData("Current Mode: ", mode);
+        telemetry.addData("armTarget: ", armTarget);
+        telemetry.addData("armPos: ", armPos);
+        telemetry.addData("armPower: ", armPower);
+        telemetry.addData("slidesTarget: ", slidesTarget);
+        telemetry.addData("slidesPos: ", slidesPos);
+        telemetry.addData("slidesPower: ", slidesPower);
+        telemetry.addData("leftIntakePos: ", leftClawPos);
+        telemetry.addData("rightIntakePos: ", rightClawPos);
+        telemetry.addData("zeroLimit: ", zeroLimit.isPressed());
+        telemetry.addData("clawSensor: ", clawSensor.isPressed());
     }
 }
