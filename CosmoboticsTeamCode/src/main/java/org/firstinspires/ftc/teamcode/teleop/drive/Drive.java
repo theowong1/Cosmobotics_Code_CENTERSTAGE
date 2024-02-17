@@ -13,6 +13,7 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
@@ -33,10 +34,6 @@ public class Drive {
     private PIDFController turnController = new PIDFController(new PIDCoefficients(1.25, 0, 0.0002));
 
     public double IMUOffset;
-
-    public double x;
-    public double y; // Remember, Y stick value is reversed
-    public static double rx;
     public double RedOffset = 270;
     public double BlueOffset = 90;
 
@@ -44,7 +41,11 @@ public class Drive {
 
     public static final boolean robotCentric = false;
     public static final boolean brakeMode = true;
-    public Drive(GamepadEx gamepadEx, HardwareMap hardwareMap) {
+
+    private double y;
+    private double x;
+    private double rx;
+    public Drive(HardwareMap hardwareMap) {
         frontRight = new MotorEx(hardwareMap, "frontRight", Motor.GoBILDA.RPM_312);
         frontLeft = new MotorEx(hardwareMap, "frontLeft", Motor.GoBILDA.RPM_312);
         backRight = new MotorEx(hardwareMap, "backRight", Motor.GoBILDA.RPM_312);
@@ -90,27 +91,27 @@ public class Drive {
         drive = new MecanumDrive(frontLeft, frontRight, backLeft, backRight);
         botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) + IMUOffset;
 
-        x = gamepadEx.getLeftX() / slowModeOffset;
-        y = gamepadEx.getLeftY() / slowModeOffset;
-        rx = gamepadEx.getRightX() / slowModeOffset;
+        y = 0;
+        x = 0;
+        rx = 0;
     }
 
-    public void normalTurn(GamepadEx gamepadEx) {
-        rx = gamepadEx.getRightX() / slowModeOffset;
+    public void normalTurn(double rx) {
+        this.rx = rx /= slowModeOffset;
     }
     public void autoTurnLeft() {
         if (isRed) {
-            rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(270));
+            this.rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(270)) / slowModeOffset;
         } else {
-            rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(45));
+            this.rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(45)) / slowModeOffset;
         }
     }
 
     public void autoTurnRight() {
         if (isRed) {
-            rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(315));
+            this.rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(315)) / slowModeOffset;
         } else {
-            rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(90));
+            this.rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(90)) / slowModeOffset;
         }
     }
 
@@ -148,18 +149,17 @@ public class Drive {
         while (angle < 0) angle += 2 * Math.PI;
         return angle;
     }
-
-    public void update(GamepadEx gamepadEx) {
-        x = gamepadEx.getLeftX() / slowModeOffset;
-        y = gamepadEx.getLeftY() / slowModeOffset;
+    public void drive(double x, double y) {
+        botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) + IMUOffset;
+        this.x = x /= slowModeOffset;
+        this.y = y /= slowModeOffset;
         if (robotCentric) {
-            drive.driveRobotCentric(x, y, rx);
+            drive.driveRobotCentric(this.rx, this.y, this.x);
         } else {
-            drive.driveFieldCentric(x, y, rx, botHeading);
+            drive.driveFieldCentric(this.rx, this.x, this.y, botHeading);
         }
-        telemetry.addData("strafeSpeed", x);
-        telemetry.addData("forwardSpeed", y);
-        telemetry.addData("turnSpeed/turn", rx);
+    }
+    public void update(Telemetry telemetry) {
         telemetry.addData("botHeading", botHeading);
         telemetry.addData("frontLeft", frontLeft.getVelocity());
         telemetry.addData("backLeft", backLeft.getVelocity());

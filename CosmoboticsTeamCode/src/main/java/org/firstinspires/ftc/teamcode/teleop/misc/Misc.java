@@ -29,7 +29,7 @@ public class Misc {
     public String righthubcolor = "green";
 
     //Yellow, Purple, Green, White
-    public int[] Colors = {Integer.parseInt("F2AF13", 16), Integer.parseInt("800080", 16), Integer.parseInt("00FF00", 16), Integer.parseInt("FFFFFF", 16)};
+    public int[] Colors = {Integer.parseInt("FFFF00", 16), Integer.parseInt("800080", 16), Integer.parseInt("00FF00", 16), Integer.parseInt("FFFFFF", 16)};
 
     public Misc (HardwareMap hardwareMap) {
         lefthubcolor = "green";
@@ -135,7 +135,7 @@ public class Misc {
         }
     }
 
-    public void update() {
+    public void update(Telemetry telemetry) {
         telemetry.addData("IsRedAlliance?", isRed);
         telemetry.addData("leftPixelLED", lefthubcolor);
         telemetry.addData("rightPixelLED", righthubcolor);

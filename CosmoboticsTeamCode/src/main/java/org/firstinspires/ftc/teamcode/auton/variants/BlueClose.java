@@ -20,7 +20,7 @@ public class BlueClose extends LinearOpMode {
         drive.followTrajectorySequenceAsync(traj);
         while (!isStopRequested() && drive.isBusy()) {
             drive.update();
-            transport.update();
+            transport.update(telemetry);
         }
     }
     @Override

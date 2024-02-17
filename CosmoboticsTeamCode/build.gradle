@@ -57,4 +57,3 @@ dependencies {
     implementation 'org.ftclib.ftclib:core:2.0.1' // core
     implementation 'org.team11260:fast-load:0.1.2'
 }
-

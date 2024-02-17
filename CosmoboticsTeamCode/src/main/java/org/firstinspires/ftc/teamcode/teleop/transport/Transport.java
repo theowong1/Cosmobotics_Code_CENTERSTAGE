@@ -182,29 +182,6 @@ public class Transport {
         }
     }
 
-    public void update() {
-        int armPos = armMotor.getCurrentPosition();
-        double armpid = armController.calculate(armPos, armTarget);
-        double armff = Math.cos(Math.toRadians(armTarget / arm_ticks_in_degrees)) * f;
-
-        double armPower = armpid + armff;
-
-        armMotor.setPower(armPower);
-
-        int slidesPos = slidesMotor.getCurrentPosition();
-        double slidespid = slidesController.calculate(slidesPos, slidesTarget);
-
-        double slidesPower = slidespid;
-
-        slidesMotor.setPower(slidesPower);
-
-        if (zeroLimit.isPressed()) {
-            armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        }
-        setTPos();
-    }
-
     public void autoModeOn() {
         if (mode == 2) {
             if (clawSensor.isPressed()) {
@@ -296,7 +273,7 @@ public class Transport {
         mode = 2;
     }
 
-    public void update(Gamepad gamepad1, Gamepad gamepad2, Telemetry telemetry) {
+    public void update(Telemetry telemetry) {
         int armPos = armMotor.getCurrentPosition();
         double armpid = armController.calculate(armPos, armTarget);
         double armff = Math.cos(Math.toRadians(armTarget / arm_ticks_in_degrees)) * f;

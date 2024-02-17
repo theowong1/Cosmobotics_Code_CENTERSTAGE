@@ -14,8 +14,8 @@ import org.firstinspires.ftc.teamcode.teleop.utils.Controls;
 @Config
 @TeleOp
 public class CosmoboticsTeleOp extends OpMode {
-    GamepadEx gamepad1;
-    GamepadEx gamepad2;
+    GamepadEx gamepadEx1;
+    GamepadEx gamepadEx2;
     Drive drive;
     Transport transport;
     Misc misc;
@@ -23,7 +23,7 @@ public class CosmoboticsTeleOp extends OpMode {
     Controls controls;
     @Override
     public void init() {
-        drive = new Drive(gamepad1, hardwareMap);
+        drive = new Drive(hardwareMap);
         transport = new Transport(hardwareMap);
         misc = new Misc(hardwareMap);
         controls = new Controls(gamepad1, gamepad2, drive, transport, misc);
@@ -31,10 +31,10 @@ public class CosmoboticsTeleOp extends OpMode {
 
     @Override
     public void loop() {
-        controls.update();
-        drive.update(gamepad1);
-        transport.update();
-        misc.update();
+        controls.update(telemetry);
+        drive.update(telemetry);
+        transport.update(telemetry);
+        misc.update(telemetry);
         telemetry.update();
     }
 }

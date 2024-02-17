@@ -48,7 +48,7 @@ public class PIDFTransport extends OpMode {
 
     @Override
     public void init() {
-        drive = new Drive(gamepad1, hardwareMap);
+        drive = new Drive(hardwareMap);
         leftClaw = hardwareMap.get(ServoImplEx.class, "leftIntake");
         rightClaw = hardwareMap.get(ServoImplEx.class, "rightIntake");
 
@@ -72,7 +72,7 @@ public class PIDFTransport extends OpMode {
 
     @Override
     public void loop() {
-        drive.update(gamepad1);
+        drive.update(telemetry);
         intakeRotation.setPosition(servoPos);
         leftClaw.setPosition(leftClawPos);
         rightClaw.setPosition(rightClawPos);
